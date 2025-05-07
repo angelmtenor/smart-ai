@@ -73,6 +73,7 @@
         "loguru",
         "mccabe",
         "psutil",
+        "pycache",
         "Pycodestyle",
         "pydocstyle",
         "Pyflakes",
