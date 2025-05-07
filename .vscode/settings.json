@@ -1,0 +1,86 @@
+{
+    // File Handling
+    // Automatically save files after a delay (default is 1000ms, adjustable via "files.autoSaveDelay")
+    "files.autoSave": "afterDelay",
+    // Remove trailing whitespace on save
+    "files.trimTrailingWhitespace": true,
+    // Ensure a newline at the end of files
+    "files.insertFinalNewline": true,
+    // Editor Configuration
+    // Format code on save
+    "editor.formatOnSave": true,
+    // Display a vertical ruler at 120 characters
+    "editor.rulers": [
+        120
+    ],
+    // Enforce spaces instead of tabs
+    "editor.insertSpaces": true,
+    // Set tab size to 4 spaces
+    "editor.tabSize": 4,
+    // Disable automatic indentation detection
+    "editor.detectIndentation": false,
+    // Python Formatting
+    // Use Black as the default formatter for Python files
+    "[python]": {
+        "editor.formatOnSave": true,
+        "editor.insertSpaces": true,
+        "editor.tabSize": 4,
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    // Configure Black to respect 120-character line length
+    "black-formatter.args": [
+        "--line-length",
+        "120"
+    ],
+    // Python Language Server and Analysis
+    // Use Pylance as the language server
+    "python.languageServer": "Pylance",
+    // Enable strict type checking (adjust as needed for project)
+    "python.analysis.typeCheckingMode": "strict",
+    // Jupyter Notebook Settings
+    // Avoid prompting for kernel restart
+    "jupyter.askForKernelRestart": false,
+    // Set maximum line limit for notebook output
+    "notebook.output.textLineLimit": 150,
+    // Git Integration
+    // Automatically fetch from remote repositories
+    "git.autofetch": true,
+    // Skip confirmation for git sync operations
+    "git.confirmSync": false,
+    // Enable smart commit (commit all changes when message is provided)
+    "git.enableSmartCommit": true,
+    // Copilot Settings
+    // Enable auto-completions from GitHub Copilot
+    "github.copilot.enable": true,
+    // Spell Checking
+    // Support English and Spanish spell checking
+    "cSpell.language": "en,es",
+    // Testing Configuration
+    // Enable pytest for testing, targeting the 'tests' directory
+    "python.testing.pytestEnabled": true,
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    // Disable unittest framework
+    "python.testing.unittestEnabled": false,
+    "cSpell.words": [
+        "debugpy",
+        "dotenv",
+        "httpx",
+        "ipynb",
+        "isort",
+        "jupyter",
+        "loguru",
+        "mccabe",
+        "psutil",
+        "Pycodestyle",
+        "pydocstyle",
+        "Pyflakes",
+        "pyinstrument",
+        "pyproject",
+        "pyright",
+        "pytest",
+        "pyupgrade",
+        "venv"
+    ]
+}

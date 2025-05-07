@@ -1,0 +1,6 @@
+.env
+.python-version
+uv.lock
+setup_user_error.log
+uv_venv_error.log
+uv_sync_error.log

@@ -1,0 +1,51 @@
+# Pre-commit settings / QA
+# Author: Angel Martinez-Tenor
+# Date: 2022-2025
+# Repository: https://github.com/angelmtenor/ds-template
+
+# Instructions:
+# - Install pre-commit: 'pip install pre-commit'
+# - Set up hooks: 'pre-commit install'
+# - Run manual QA: 'pre-commit run --all-files'
+# - Update hook versions: 'pre-commit autoupdate'
+# - Advanced QA (optional): 'ruff check src --max-line-length 120' or 'ruff check $(git ls-files "*.py") --max-line-length 120'
+
+# Mandatory pre-commit hooks for all repositories
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0  # General housekeeping and file validation hooks
+    hooks:
+      - id: trailing-whitespace  # Remove trailing whitespace
+      - id: mixed-line-ending    # Ensure consistent line endings
+      - id: end-of-file-fixer    # Ensure files end with a newline
+      - id: requirements-txt-fixer  # Fix syntax errors in requirements.txt
+      - id: check-toml           # Validate TOML files
+      - id: check-yaml           # Validate YAML files (exclude Helm configs)
+        exclude: helm_config/.*
+      - id: check-json           # Validate JSON files (exclude VS Code settings)
+        exclude: .vscode/settings.json
+      - id: check-merge-conflict  # Detect merge conflict markers
+      - id: check-case-conflict   # Check for case-sensitive filename conflicts
+      - id: check-added-large-files  # Warn on large files (>2MB)
+        args: ["--maxkb=2000"]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.0  # Ruff for linting and formatting (replaces Pylint, Flake8, etc.)
+    hooks:
+      - id: ruff
+        args: ["--fix", "--show-fixes", "--config=pyproject.toml", "--unsafe-fixes"]
+      - id: ruff-format
+        args: ["--config=pyproject.toml"]
+
+  - repo: https://github.com/RobertCraigie/pyright-python
+    rev: v1.1.396  # Static type checking for Python code
+    hooks:
+      - id: pyright
+        args: ["--project", "pyproject.toml"]
+
+  # Optional: Security linting (disable if not needed)
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.8.3  # Security linter for Python code
+    hooks:
+      - id: bandit
+        args: ["-q", "-s", "B101,B104,B301,B403,B404,B602,B603,B607,B608"]  # Skip common false positives
