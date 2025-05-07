@@ -30,7 +30,7 @@ repos:
         args: ["--maxkb=2000"]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.0  # Ruff for linting and formatting (replaces Pylint, Flake8, etc.)
+    rev: v0.11.8  # Ruff for linting and formatting (replaces Pylint, Flake8, etc.)
     hooks:
       - id: ruff
         args: ["--fix", "--show-fixes", "--config=pyproject.toml", "--unsafe-fixes"]
@@ -38,7 +38,7 @@ repos:
         args: ["--config=pyproject.toml"]
 
   - repo: https://github.com/RobertCraigie/pyright-python
-    rev: v1.1.396  # Static type checking for Python code
+    rev: v1.1.400  # Static type checking for Python code
     hooks:
       - id: pyright
         args: ["--project", "pyproject.toml"]

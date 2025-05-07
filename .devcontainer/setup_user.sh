@@ -130,6 +130,39 @@ verify_installations() {
     log success "Tools verified."
 }
 
+# Install nvm and Node.js 20
+setup_nvm() {
+    log info "Checking nvm and Node.js 20..."
+    check_cmd curl || log error "curl not found. Install with 'sudo apt install curl'."
+
+    # Check if nvm is installed
+    if [[ -d "$HOME/.nvm" && -s "$HOME/.nvm/nvm.sh" ]]; then
+        log success "nvm already installed."
+        export NVM_DIR="$HOME/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    else
+        log info "Installing nvm..."
+        curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+        [[ $? -ne 0 ]] && log error "Failed to install nvm."
+        export NVM_DIR="$HOME/.nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+        log success "nvm installed."
+    fi
+
+    # Check if Node.js 20 is installed
+    if nvm ls 20 &>/dev/null; then
+        log success "Node.js 20 already installed."
+        nvm use 20 &>/dev/null || log error "Failed to activate Node.js 20."
+    else
+        log info "Installing Node.js 20..."
+        nvm install 20 &>/dev/null || log error "Failed to install Node.js 20."
+        nvm use 20 &>/dev/null || log error "Failed to activate Node.js 20."
+        log success "Node.js 20 installed."
+    fi
+
+    log success "nvm and Node.js 20 configured."
+}
+
 # Main
 main() {
     local mode="install"
@@ -145,8 +178,12 @@ main() {
         configure_alias
         log warn "Run 'source ~/.bashrc' to apply changes."
     fi
+
+    setup_nvm
+
     verify_installations
     log success "Environment $mode completed."
+
 }
 
 main "$@"
