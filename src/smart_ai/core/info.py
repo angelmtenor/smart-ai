@@ -64,9 +64,9 @@ def info_gpu() -> None:
         if torch.cuda.is_available():
             log.info(f"{'GPU':<25}{torch.cuda.get_device_name(0)}")
         else:
-            log.info("GPU: No GPU available")
+            log.info(f"{'GPU':<25}No GPU available")
     except ImportError:
-        log.info("GPU: PyTorch not installed")
+        log.info(f"{'GPU':<25}PyTorch not installed")
 
 
 def info_system(hardware: bool = True, modules: list[str] | None = None) -> None:
