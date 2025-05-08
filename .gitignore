@@ -6,3 +6,5 @@ uv_venv_error.log
 uv_sync_error.log
 *.pyc
 __pycache__/
+.ruff_cache/
+.pytest_cache/
