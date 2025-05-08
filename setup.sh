@@ -70,6 +70,8 @@ main() {
     log success "Project '$project_name' setup completed."
 }
 
+git flow init -d
+
 main
 
 make qa
