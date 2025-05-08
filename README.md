@@ -55,7 +55,7 @@ To properly set up your machine for development, follow these steps. These steps
 
 ### Project Setup
 
-After the one-time setup, use the `setup` macro to ensure the Python environment for the project is correctly recreated and synced.
+After the one-time setup, use the `setup` macro to ensure the Python environment for the project is correctly recreated and synced (it also executes the below `make qa` command).
 
 ```bash
 setup
@@ -65,6 +65,7 @@ This command performs the following actions:
 
 *   Checks and activates the virtual environment.
 *   Syncs project dependencies using `uv`.
+*   Installs pre-commit hooks if not already installed and runs them (`make qa`)
 
 ### Contributing
 

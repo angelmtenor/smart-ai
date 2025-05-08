@@ -51,7 +51,12 @@
     "git.enableSmartCommit": true,
     // Copilot Settings
     // Enable auto-completions from GitHub Copilot
-    "github.copilot.enable": true,
+    "github.copilot.enable": {
+        "*": true,
+        "plaintext": false,
+        "markdown": true,
+        "scminput": false
+    },
     // Spell Checking
     // Support English and Spanish spell checking
     "cSpell.language": "en,es",
