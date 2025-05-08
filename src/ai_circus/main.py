@@ -1,7 +1,7 @@
-"""Dummy module for smart-ai."""
+"""Dummy module for ai-circus."""
 
-from smart_ai.core import logger
-from smart_ai.core.info import info_system
+from ai_circus.core import logger
+from ai_circus.core.info import info_system
 
 log = logger.init(level="INFO")
 

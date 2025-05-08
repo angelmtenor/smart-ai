@@ -1,5 +1,5 @@
 [project]
-name = "smart-ai"
+name = "ai-circus"
 version = "0.1.0"
 authors = [{ name = "Angel", email = "angelmtenor@gmail.com" }]
 license = { text = "MIT" }

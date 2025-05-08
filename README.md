@@ -1,4 +1,4 @@
-# SMART-AI
+# ai-circus
 
 A Building Block for Generative AI Applications with state-of-the-art performance.
 

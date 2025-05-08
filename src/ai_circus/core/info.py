@@ -16,7 +16,7 @@ from typing import Any, TypeVar
 import cpuinfo
 import psutil
 
-from smart_ai.core import logger
+from ai_circus.core import logger
 
 F = TypeVar("F", bound=Callable[..., Any])
 log = logger.get_logger(__name__)
