@@ -42,7 +42,8 @@ build-backend = "hatchling.build"
 venv = ".venv"
 venvPath = "."
 exclude = ["**/notebooks_extra", "**/__pycache__", "**/.venv"]
-# typeCheckingMode = "strict"  # Uncomment if stricter typing is desired
+typeCheckingMode = "basic"
+# Replace by "strict" for strict type checking
 # reportMissingTypeStubs = false
 
 [tool.ruff]

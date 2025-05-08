@@ -36,7 +36,7 @@
     // Use Pylance as the language server
     "python.languageServer": "Pylance",
     // Enable strict type checking (adjust as needed for project)
-    "python.analysis.typeCheckingMode": "strict",
+    // "python.analysis.typeCheckingMode": "strict",
     // Jupyter Notebook Settings
     // Avoid prompting for kernel restart
     "jupyter.askForKernelRestart": false,
