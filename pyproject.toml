@@ -17,7 +17,7 @@ dependencies = [
     "python-dotenv>=1.1.0",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
     "bandit>=1.8.3",
     "debugpy>=1.8.14",
@@ -30,6 +30,9 @@ dev = [
     "ruff>=0.11.8",
     "twine>=6.1.0",
 ]
+
+[project.optional-dependencies]
+optional = []
 
 [build-system]
 requires = ["hatchling"]

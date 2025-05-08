@@ -64,7 +64,7 @@ main() {
 
     # Sync dependencies
     log info "Syncing dependencies..."
-    uv sync --extra dev >&2 || { log error "Failed to sync dependencies."; return 1; }
+    uv sync --extra optional >&2 || { log error "Failed to sync dependencies."; return 1; }
     log success "Dependencies synced."
 
     log success "Project '$project_name' setup completed."

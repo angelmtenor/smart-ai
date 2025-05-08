@@ -3,6 +3,10 @@
 # Define the expected virtual environment path
 VENV_DIR := .venv
 
+# Declare phony targets to avoid conflicts with files
+.PHONY: check-venv qa build update
+
+
 # Check if the correct virtual environment is active
 check-venv:
 	@if [ -z "$$VIRTUAL_ENV" ]; then \
@@ -22,7 +26,17 @@ qa: check-venv
 	@pre-commit run --all-files || { echo "❌ Quality assurance checks failed."; exit 1; }
 	@echo "✅ Quality assurance checks complete!"
 
+# Build the package
 build: check-venv
 	@echo "🔨 Building the project..."
 	@uv build || { echo "❌ Build failed."; exit 1; }
 	@echo "✅ Build complete!"
+
+
+# Update dependencies and pre-commit hooks
+update: check-venv
+	@echo "🔄 Updating dependencies and pre-commit hooks..."
+	@uv lock --upgrade || { echo "❌ Failed to upgrade uv lock."; exit 1; }
+	@uv sync --extra optional  || { echo "❌ Failed to sync uv."; exit 1; }
+	@pre-commit autoupdate || { echo "❌ Failed to update pre-commit hooks."; exit 1; }
+	@echo "✅ Update complete!"
