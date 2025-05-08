@@ -69,7 +69,7 @@ def info_gpu() -> None:
         log.info(f"{'GPU':<25}PyTorch not installed")
 
 
-def info_system(hardware: bool = True, modules: list[str] | None = None) -> None:
+def info_system(modules: list[str] | None = None) -> None:
     """
     Log full system information including OS, hardware, and software.
 
@@ -77,9 +77,8 @@ def info_system(hardware: bool = True, modules: list[str] | None = None) -> None
         hardware (bool): Whether to include hardware info (CPU, RAM, GPU). Defaults to True.
         modules (list[str] | None): List of module names to log versions for. Defaults to DEFAULT_MODULES.
     """
-    if hardware:
-        info_hardware()
-        info_gpu()
+    info_hardware()
+    info_gpu()
     info_os()
     info_software(modules)
     log.info(f"{'EXECUTION PATH':<25}{Path().absolute()}")

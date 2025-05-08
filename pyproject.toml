@@ -138,6 +138,7 @@ docstring-code-line-length = "dynamic" # Line length for docstring code.
 
 [tool.ruff.lint]
 select = [ # List of rule codes/prefixes to enable
+    # "ALL" # Enable all rules (not recommended for existing projects)
     "ANN",  # Type annotations
     "F",    # Pyflakes: Logical errors
     "E",    # Pycodestyle: Style errors (PEP 8)
@@ -154,6 +155,7 @@ select = [ # List of rule codes/prefixes to enable
     "T20",  # flake8-print: Discourage `print` calls in library code (T201, T203)
     "FURB", # refurb: Modernize Python code
     # "RUF",  # Ruff-specific rules (often very useful, e.g., RUF001-RUF003 for ambiguous unicode)
+
     # Consider adding more specific rules or prefixes based on project needs:
     # "A", "ANN", "ARG", "BLE", "COM", "ERA", "EXE", "FA", "FURB", "G", "ICN", "ISC",
     # "LOG", "PERF", "PGH", "PIE", "PL", "PTH", "RET", "RSE", "S", "SLF", "SLOT",
@@ -170,6 +172,10 @@ ignore = [ # List of rule codes/prefixes to ignore globally
     "D415",   # First line should end with a period, question mark, or exclamation point (style preference)
     "E501",   # Line too long (handled by formatter, but linter might still warn if formatter is off for some reason)
     "ANN401", # Dynamically typed expressions (typing.Any) are disallowed
+    "FBT001", # Boolean flag used in a function (e.g., `def foo(flag: bool = True)`)
+    "FBT002", # Default Boolean flag used in a function
+    "PLR0913", # Too many arguments (function with many parameters can be common in some cases)
+    "G004", # f string in log
     # "ANN101", # Missing type annotation for `self` in method
     # "ANN102", # Missing type annotation for `cls` in classmethod
 ]

@@ -4,7 +4,7 @@
 """
 
 import sys
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -103,7 +103,7 @@ def _resolve_log_filepath(
     if force_filepath:
         return Path(force_filepath)
 
-    timestamp = datetime.now().strftime(FILENAME_TIMESTAMP_FORMAT)
+    timestamp = datetime.now(tz=UTC).strftime(FILENAME_TIMESTAMP_FORMAT)
     filename = f"{timestamp}"
     if filename_modifier:
         filename += f"_{filename_modifier}"
