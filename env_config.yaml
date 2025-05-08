@@ -1,0 +1,40 @@
+# Configuration file for environment variables required by the application
+# Author: Angel Martinez-Tenor, 2025.
+# Defines variable names, descriptions, types, constraints, and validation rules
+
+env_variables:
+  - name: OPENAI_API_KEY
+    description: API key for accessing OpenAI services for AI-related functionalities
+    type: string
+    mandatory: false
+    secret: true
+    default: null
+    validation:
+      regex: ^[a-zA-Z0-9-]{20,}$  # Basic pattern for API key (e.g., min 20 chars, alphanumeric)
+      error_message: "Invalid OpenAI API key format. Expected a string of at least 20 alphanumeric characters."
+
+  - name: GOOGLE_API_KEY
+    description: API key for accessing Google services (e.g., Maps, Cloud)
+    type: string
+    mandatory: false
+    secret: true
+    default: null
+    validation:
+      regex: ^[a-zA-Z0-9-_]{39}$  # Typical Google API key length and format
+      error_message: "Invalid Google API key format. Expected a 39-character string with alphanumeric and hyphen/underscore."
+
+  - name: YAVILY_API_KEY
+    description: API key for accessing Yavily services (e.g., data aggregation)
+    type: string
+    mandatory: false
+    secret: true
+    default: null
+    validation:
+      regex: ^[a-zA-Z0-9]{32}$  # Example: 32-character API key
+      error_message: "Invalid Yavily API key format. Expected a 32-character alphanumeric string."
+
+# Optional global settings
+global_settings:
+  env_file: ".env"  # Default location for environment variable file
+  fail_on_missing: true  # Stop execution if mandatory variables are missing
+  case_sensitive: true  # Enforce case sensitivity for variable names

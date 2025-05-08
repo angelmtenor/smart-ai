@@ -255,3 +255,6 @@ python_functions = "test_* it_* should_* scenario_*" # Prefixes or glob patterns
 #     "error", # Treat all warnings as errors
 #     "ignore::DeprecationWarning", # Example: ignore all deprecation warnings
 # ]
+
+[project.scripts]
+# ai-test = "ai_circus.main:main" # Test script entry point
