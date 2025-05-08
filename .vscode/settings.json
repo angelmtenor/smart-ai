@@ -64,6 +64,8 @@
     // Disable unittest framework
     "python.testing.unittestEnabled": false,
     "cSpell.words": [
+        "autoupdate",
+        "CUDA",
         "debugpy",
         "dotenv",
         "httpx",

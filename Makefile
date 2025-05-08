@@ -1,3 +1,5 @@
+# Author: Angel Martinez-Tenor, 2025. Adapted from https://github.com/angelmtenor/ds-template
+
 # Define the expected virtual environment path
 VENV_DIR := .venv
 

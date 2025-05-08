@@ -1,3 +1,5 @@
+# Author: Angel Martinez-Tenor, 2025. Adapted from https://github.com/angelmtenor/ds-template
+
 [project]
 name = "ai-circus"
 version = "0.1.0"
@@ -5,7 +7,7 @@ authors = [{ name = "Angel", email = "angelmtenor@gmail.com" }]
 license = { text = "MIT" }
 description = "Smart AI Building Block"
 readme = "README.md"
-requires-python = ">=3.13" # Aligned with Ruff target-version
+requires-python = ">=3.13"
 dependencies = [
     "httpx>=0.28.1",
     "loguru>=0.7.3",
@@ -16,15 +18,16 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+    "bandit>=1.8.3",
     "debugpy>=1.8.14",
     "jupyter>=1.1.1",
     "pre-commit>=4.2.0",
     "pyinstrument>=5.0.1",
+    "pyright>=1.1.400",
     "pytest>=8.3.5",
     "pytest-cov>=6.1.1",
     "ruff>=0.11.8",
     "twine>=6.1.0",
-    "pyright>=1.1.400",
 ]
 
 [build-system]
@@ -34,10 +37,14 @@ build-backend = "hatchling.build"
 [tool.pyright]
 venv = ".venv"
 venvPath = "."
+exclude = ["**/notebooks_extra", "**/__pycache__", "**/.venv"]
+# typeCheckingMode = "strict"  # Uncomment if stricter typing is desired
+# reportMissingTypeStubs = false
 
 [tool.ruff]
 line-length = 120
 target-version = "py313"
+extend-exclude = [".venv"]  # Exclude virtualenv
 
 [tool.ruff.format]
 docstring-code-format = true
@@ -45,39 +52,52 @@ indent-style = "space"
 quote-style = "double"
 
 [tool.ruff.lint]
-# Specify the linting rules to enable
-per-file-ignores = { "**/notebooks_extra/**" = ["ALL"], "**.ipynb" = [
-    "E501", # Line too long
-    "D103", # Missing docstring in public function
-    "D101", # Missing docstring in public class
-    "E402", # Module level import not at top of file
-], "**/__init__.py" = ["D104"] }
-
 select = [
-    "F",   # Pyflakes: Logical errors and undefined variables
+    "F",   # Pyflakes: Logical errors
     "E",   # Pycodestyle: Style errors
     "W",   # Pycodestyle: Style warnings
     "D",   # pydocstyle: Docstring conventions
-    "B",   # flake8-bugbear: Best practices and potential bugs
-    "I",   # isort: Import sorting
-    "N",   # PEP8 Naming: Naming conventions
-    "UP",  # pyupgrade: Python syntax upgrades
+    "B",   # flake8-bugbear: Potential bugs
+    "I",   # isort: Import sorting (enables isort rules)
+    "N",   # PEP8 Naming
+    "UP",  # pyupgrade: Syntax upgrades
     "C90", # mccabe: Code complexity
-    "Q",   # flake8-quotes: String quote consistency
+    "Q",   # flake8-quotes: Quote consistency
 ]
 ignore = [
-    "B007", # Unused loop variable (often stylistic)
+    "B007", # Unused loop variable
     "B008", # False positive with dependency injection
-    "C901", # Function complexity (can be revisited if needed)
+    "C901", # Function complexity
     "D105", # Missing docstring in magic method
     "D203", # Docstring style conflicts
-    "D205", # 1 blank line required between summary and description
+    "D205", # Blank line between summary and description
     "D212", # Docstring style conflicts
     "D415", # Missing trailing punctuation in docstring
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"**/notebooks_extra/**" = ["ALL"]  # Exploratory notebooks, no strict linting
+"**.ipynb" = ["E501", "D103", "D101", "E402"]
+"**/__init__.py" = ["D104"]
+
 [tool.ruff.lint.pydocstyle]
 convention = "google"
 
-[dependency-groups]
-dev = ["pyright>=1.1.400"]
+[tool.bandit]
+skips = [
+    "B101", # Assert statements (used for testing)
+    "B104", # Hardcoded IPs (not applicable)
+    "B301", # Pickle (safe in context)
+    "B403", # Import pickle (safe in context)
+    "B404", # Subprocess (controlled usage)
+    "B602", # Subprocess calls (controlled)
+    "B603", # Subprocess without shell (controlled)
+    "B607", # Start process (controlled)
+    "B608", # SQL injection (not applicable)
+]
+targets = ["src", "tests"]  # Specify directories to scan
+exclude_dirs = [".venv"]  # Exclude virtualenv
+
+[tool.pytest.ini_options]
+addopts = "--cov=src --cov-report=html"
+testpaths = ["tests"]

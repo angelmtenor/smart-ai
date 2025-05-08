@@ -1,5 +1,7 @@
 #!/bin/bash
-# Angel Martinez-Tenor, 2025
+
+# Author: Angel Martinez-Tenor, 2025. Adapted from https://github.com/angelmtenor/ds-template
+
 # Updates Ubuntu system and installs essential project packages.
 # Optionally installs NVIDIA/CUDA GPU support.
 # Recommended: Ubuntu 24.04 LTS or later

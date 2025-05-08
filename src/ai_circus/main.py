@@ -1,4 +1,7 @@
-"""Dummy module for ai-circus."""
+"""
+- Title: Dummy module for ai-circus.
+- Author: Angel Martinez-Tenor, 2025. Adapted from https://github.com/angelmtenor/ds-template
+"""
 
 from ai_circus.core import logger
 from ai_circus.core.info import info_system

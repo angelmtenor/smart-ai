@@ -1,6 +1,7 @@
 #!/bin/bash
-# Author: Angel Martinez-Tenor, 2025
-# Adapted From: https://github.com/angelmtenor/ds-template
+
+# Author: Angel Martinez-Tenor, 2025. Adapted from https://github.com/angelmtenor/ds-template
+
 # Description: Initializes a Python project with uv and a virtual environment.
 # Usage: source ./create_new_project.sh
 

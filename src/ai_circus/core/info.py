@@ -1,6 +1,6 @@
 """
-Title:    Info
-Author:   Angel Martinez-tenor, 2025. Adapted from https://github.com/angelmtenor/ds-template
+- Title:    Info
+- Author:   Angel Martinez-tenor, 2025. Adapted from https://github.com/angelmtenor/ds-template
 """
 
 from __future__ import annotations

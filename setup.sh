@@ -1,7 +1,8 @@
 #!/bin/bash
-# filepath: setup.sh
-# Author: Angel Martinez-Tenor, 2025
-# Description: Sets up a Python project using pyproject.toml, managing a virtual environment, and syncing dependencies with uv.
+
+# Author: Angel Martinez-Tenor, 2025. Adapted from https://github.com/angelmtenor/ds-template
+
+# Description: Sets up a Python project using pyproject.toml, managing a virtual env, and syncing dependencies with uv.
 # Usage: source ./setup.sh
 
 # Check if sourced
@@ -70,4 +71,7 @@ main() {
 }
 
 main
+
+make qa
+
 return 0

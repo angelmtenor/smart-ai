@@ -1,6 +1,7 @@
 #!/bin/bash
-# filepath: .devcontainer/setup_user.sh
-# Author: Angel Martinez-Tenor, 2025
+
+# Author: Angel Martinez-Tenor, 2025. Adapted from https://github.com/angelmtenor/ds-template
+
 # Description: Sets up or updates user environment with Git, tools, and shell config for dual environments.
 # Usage: source setup_user.sh [--update]
 
