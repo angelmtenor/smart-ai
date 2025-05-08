@@ -69,16 +69,26 @@
     // Disable unittest framework
     "python.testing.unittestEnabled": false,
     "cSpell.words": [
+        "addopts",
+        "autoinstall",
         "autoupdate",
+        "cookiecutter",
+        "cuda",
         "CUDA",
         "debugpy",
         "dotenv",
+        "ensurepath",
         "httpx",
         "ipynb",
         "isort",
         "jupyter",
+        "libc",
+        "linux",
         "loguru",
         "mccabe",
+        "nvidia",
+        "nvtop",
+        "pipx",
         "psutil",
         "pycache",
         "Pycodestyle",
@@ -89,6 +99,9 @@
         "pyright",
         "pytest",
         "pyupgrade",
-        "venv"
+        "testpaths",
+        "venv",
+        "virtualenv",
+        "xclip"
     ]
 }
