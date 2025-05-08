@@ -68,7 +68,9 @@ def init(
 
     if save_log:
         log_filepath = _resolve_log_filepath(
-            subfolder=subfolder, filename_modifier=filename_modifier, force_filepath=force_filepath
+            subfolder=subfolder,
+            filename_modifier=filename_modifier,
+            force_filepath=force_filepath,
         )
         try:
             log_filepath.parent.mkdir(parents=True, exist_ok=True)

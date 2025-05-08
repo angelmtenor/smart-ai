@@ -59,7 +59,7 @@ def info_hardware() -> None:
 def info_gpu() -> None:
     """Log GPU details using PyTorch, if available."""
     try:
-        import torch  # noqa: F401 # type: ignore[import] # PyTorch is optional
+        import torch  # type: ignore[import] # PyTorch is optional
 
         if torch.cuda.is_available():
             log.info(f"{'GPU':<25}{torch.cuda.get_device_name(0)}")

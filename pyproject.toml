@@ -111,7 +111,7 @@ exclude = [ # Paths to exclude from type checking
     "**/notebooks_extra", # User's original exclusion
     # Add other paths like "**/typings_removed/" if applicable
 ]
-typeCheckingMode = "basic" # Options: "off", "basic", "standard", "strict". "standard" or "strict" recommended for new projects.
+typeCheckingMode = "standard" # Options: "off", "basic", "standard", "strict". "standard" or "strict" recommended for new projects.
 # reportMissingTypeStubs = false # Set to true if you want to know about missing stubs for third-party libraries.
 # reportUnusedVariable = "warning" # Or "error", "information", "none"
 # reportImportCycles = "warning"
@@ -138,6 +138,7 @@ docstring-code-line-length = "dynamic" # Line length for docstring code.
 
 [tool.ruff.lint]
 select = [ # List of rule codes/prefixes to enable
+    "ANN",  # Type annotations
     "F",    # Pyflakes: Logical errors
     "E",    # Pycodestyle: Style errors (PEP 8)
     "W",    # Pycodestyle: Style warnings (PEP 8)
@@ -168,6 +169,7 @@ ignore = [ # List of rule codes/prefixes to ignore globally
     "D212",   # Multi-line docstring summary should start at the first line (often conflicts with D213)
     "D415",   # First line should end with a period, question mark, or exclamation point (style preference)
     "E501",   # Line too long (handled by formatter, but linter might still warn if formatter is off for some reason)
+    "ANN401", # Dynamically typed expressions (typing.Any) are disallowed
     # "ANN101", # Missing type annotation for `self` in method
     # "ANN102", # Missing type annotation for `cls` in classmethod
 ]
