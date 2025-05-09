@@ -20,6 +20,9 @@ check-venv:
 		echo "❌ Wrong virtual environment is active ($$VIRTUAL_ENV). Expected $(PWD)/$(VENV_DIR). Please deactivate the current one with 'deactivate' and run 'source ./setup.sh'."; \
 		exit 1; \
 	fi
+
+	@uv lock --locked
+
 	@echo "✅ Correct virtual environment is active: $$VIRTUAL_ENV"
 
 # Run quality assurance checks
@@ -43,3 +46,7 @@ update: check-venv
 	@uv sync --extra optional  || { echo "❌ Failed to sync uv."; exit 1; }
 	@pre-commit autoupdate || { echo "❌ Failed to update pre-commit hooks."; exit 1; }
 	@echo "✅ Update complete!"
+
+unused-packages:
+	@echo "🔍 Detecting unused packages..."
+	@deptry src

@@ -57,6 +57,7 @@ optional = []
 [dependency-groups]
 dev = [
     "debugpy>=1.8.14",
+    "deptry>=0.23.0",
     "jupyter>=1.1.1",
     "pre-commit>=4.2.0",
     "pyinstrument>=5.0.1",
@@ -154,6 +155,9 @@ convention = "google"
 [tool.ruff.lint.isort]
 required-imports = ["from __future__ import annotations"]
 
+[tool.deptry]
+
+
 # Pytest configuration
 [tool.pytest.ini_options]
 minversion = "7.0"
@@ -177,3 +181,8 @@ skip_empty = true
 [tool.coverage.run]
 branch = true
 source = ["src"]
+
+# Add executable scripts
+[project.scripts]
+ai-hello-world = "ai_circus.tools.hello_world:main"
+ai-check-api-keys = "ai_circus.tools.check_api_keys:main"
