@@ -97,6 +97,16 @@ RUN pipx install uv && \
 RUN git config --global init.defaultBranch main && \
     git config --global core.editor nano
 
+# Create setup script for user – use relative path for alias
+RUN echo "source ~/.bashrc" >> /home/$USERNAME/.bash_profile && \
+    echo "alias setup='source ./setup.sh'" >> /home/$USERNAME/.bashrc
+
 # Set entrypoint to use tini
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["/bin/bash"]
+
+# Suggest using the setup script with relative path
+RUN echo "To set up your development environment, run the following command from your home directory:" && \
+    echo "  source ./setup_user.sh" && \
+    echo "You can also use the alias 'setup' (ensure you're in the correct directory)." && \
+    echo "For more information, check the README.md file in the repository."

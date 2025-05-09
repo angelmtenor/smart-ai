@@ -3,7 +3,7 @@
 # Author: Angel Martinez-Tenor, 2025. Adapted from https://github.com/angelmtenor/ds-template
 
 # Description: Sets up a Python project using pyproject.toml, managing a virtual env, and syncing dependencies with uv.
-# Usage: source ./setup.sh
+# Usage: source ./setup.sh [--reset]
 
 # Check if sourced
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && { echo -e "\e[31m❌ Script must be sourced: 'source $0'.\e[0m" >&2; exit 1; }
@@ -19,19 +19,30 @@ log() {
     case $1 in
         success) echo -e "${GREEN}✅ $2${NC}" ;;
         warn) echo -e "${YELLOW}⚠️ $2${NC}" ;;
-        error) echo -e "${RED}❌ $2${NC}" >&2; return 1 ;;
-        info) echo -e "${GREEN}ℹ️ $2${NC}" ;;
+        error) echo -e "${RED}❌ $2${NC}. Execute 'setup --reset' to remove the existing virtual environment." >&2; return 1 ;;
+        info) echo -e "${GREEN}ℹ️ $2${NC}." ;;
     esac
 }
 
 check_cmd() { command -v "$1" &>/dev/null; }
 
 main() {
+    local reset=false
+    [[ "$1" == "--reset" ]] && reset=true
+
     log info "Starting project setup..."
+
+    # Deactivate any existing virtual environment
+    if [[ -n "${VIRTUAL_ENV:-}" ]]; then
+        log info "Deactivating existing virtual environment (${VIRTUAL_ENV})..."
+        deactivate || { log error "Failed to deactivate existing virtual environment."; return 1; }
+        log success "Existing virtual environment deactivated."
+    fi
 
     # Check prerequisites
     check_cmd uv || { log error "'uv' not installed. Install with 'pipx install uv'."; return 1; }
     [[ -f "pyproject.toml" ]] || { log error "'pyproject.toml' not found."; return 1; }
+    # check_cmd node || { log error "'node' not installed. Install with 'npm install -g nodejs'."; return 1; }
 
     # Extract project name
     local project_name
@@ -41,6 +52,12 @@ main() {
 
     # Manage virtual environment
     local venv_dir=".venv"
+    if [[ "$reset" == true && -d "$venv_dir" ]]; then
+        log info "Removing existing virtual environment..."
+        rm -rf "$venv_dir" || { log error "Failed to remove existing virtual environment."; return 1; }
+        log success "Existing virtual environment removed."
+    fi
+
     if [[ ! -d "$venv_dir" || ! -f "$venv_dir/bin/activate" ]]; then
         log info "Creating virtual environment..."
         uv venv "$venv_dir" --prompt "$project_name" >&2 || { log error "Failed to create virtual environment."; return 1; }
@@ -50,17 +67,10 @@ main() {
     fi
 
     # Activate virtual environment
-    if [[ -z "${VIRTUAL_ENV:-}" ]]; then
-        log info "Activating virtual environment..."
-        source "$venv_dir/bin/activate" || { log error "Failed to activate virtual environment."; return 1; }
-        check_cmd python || { log error "Python not found in virtual environment."; return 1; }
-        log success "Virtual environment activated."
-    elif [[ "${VIRTUAL_ENV:-}" != "$(pwd)/$venv_dir" ]]; then
-        log warn "Another virtual environment is active (${VIRTUAL_ENV:-}). Run 'deactivate'."
-        return 1
-    else
-        log success "Virtual environment already active."
-    fi
+    log info "Activating virtual environment..."
+    source "$venv_dir/bin/activate" || { log error "Failed to activate virtual environment."; return 1; }
+    check_cmd python || { log error "Python not found in virtual environment."; return 1; }
+    log success "Virtual environment activated."
 
     # Sync dependencies
     log info "Syncing dependencies..."
@@ -72,7 +82,7 @@ main() {
 
 git flow init -d
 
-main
+main "$@"
 
 make qa
 
