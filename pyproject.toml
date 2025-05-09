@@ -31,6 +31,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 
+# Main dependencies (it will always be installed and part of the package)
 dependencies = [
     "httpx>=0.28.1",
     "loguru>=0.7.3",

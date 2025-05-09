@@ -23,15 +23,15 @@ env_variables:
       regex: ^[a-zA-Z0-9-_]{39}$  # Typical Google API key length and format
       error_message: "Invalid Google API key format. Expected a 39-character string with alphanumeric and hyphen/underscore."
 
-  - name: YAVILY_API_KEY
-    description: API key for accessing Yavily services (e.g., data aggregation)
+  - name: TAVILY_API_KEY
+    description: API key for accessing Tavily services (e.g., data aggregation)
     type: string
     mandatory: false
     secret: true
     default: null
     validation:
       regex: ^[a-zA-Z0-9]{32}$  # Example: 32-character API key
-      error_message: "Invalid Yavily API key format. Expected a 32-character alphanumeric string."
+      error_message: "Invalid Tavily API key format. Expected a 32-character alphanumeric string."
 
 # Optional global settings
 global_settings:
