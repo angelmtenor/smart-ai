@@ -18,9 +18,12 @@ repos:
       - id: end-of-file-fixer
       - id: check-toml
       - id: check-yaml
-        exclude: helm_config/.*
+        exclude: ^helm_config/.*
       - id: check-json
-        exclude: .vscode/settings.json
+        exclude: ^(.vscode/settings.json|helm_config/.*)
+      - id: pretty-format-json
+        exclude: ^(.vscode/settings.json|helm_config/.*)
+        args: [--autofix, --no-sort-keys]
       - id: check-merge-conflict
       - id: check-case-conflict
       - id: check-added-large-files
