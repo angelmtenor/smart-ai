@@ -6,6 +6,8 @@
 from __future__ import annotations
 
 import platform
+import shutil
+import subprocess
 import sys
 import time
 from collections.abc import Callable
@@ -57,16 +59,36 @@ def info_hardware() -> None:
 
 
 def info_gpu() -> None:
-    """Log GPU details using PyTorch, if available."""
+    """Log GPU details using nvidia-smi, if available."""
     try:
-        import torch  # type: ignore[import] # PyTorch is optional
+        # Check if nvidia-smi is available
+        nvidia_smi_path = shutil.which("nvidia-smi")
+        if nvidia_smi_path is None:
+            log.info(f"{'GPU':<25}nvidia-smi not found")
+            return
 
-        if torch.cuda.is_available():
-            log.info(f"{'GPU':<25}{torch.cuda.get_device_name(0)}")
+        # Validate nvidia-smi path to ensure it's a known executable
+        if not Path(nvidia_smi_path).is_file():
+            log.info(f"{'GPU':<25}Invalid nvidia-smi path")
+            return
+
+        # Run nvidia-smi command to get GPU info using full path
+
+        result = subprocess.run(  # noqa: S603
+            [nvidia_smi_path, "--query-gpu=name", "--format=csv,noheader"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        gpu_name = result.stdout.strip()
+        if gpu_name:
+            log.info(f"{'GPU':<25}{gpu_name}")
         else:
-            log.info(f"{'GPU':<25}No GPU available")
-    except ImportError:
-        log.info(f"{'GPU':<25}PyTorch not installed")
+            log.info(f"{'GPU':<25}No GPU detected")
+    except subprocess.CalledProcessError:
+        log.info(f"{'GPU':<25}Error querying GPU (nvidia-smi failed)")
+    except Exception as e:
+        log.info(f"{'GPU':<25}No GPU available ({e!s})")
 
 
 def info_system(modules: list[str] | None = None) -> None:

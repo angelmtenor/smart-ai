@@ -100,6 +100,7 @@
         "minversion",
         "mypy",
         "myst",
+        "noheader",
         "numpy",
         "nvidia",
         "nvtop",
