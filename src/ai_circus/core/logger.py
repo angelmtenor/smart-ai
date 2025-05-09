@@ -3,6 +3,8 @@
 - Author:   Angel Martinez-tenor, 2025. Adapted from https://github.com/angelmtenor/ds-template
 """
 
+from __future__ import annotations
+
 import sys
 from datetime import UTC, datetime
 from pathlib import Path

@@ -3,6 +3,8 @@
 - Author: Angel Martinez-Tenor, 2025. Adapted from https://github.com/angelmtenor/ds-template
 """
 
+from __future__ import annotations
+
 from ai_circus.core import logger
 from ai_circus.core.info import info_system
 

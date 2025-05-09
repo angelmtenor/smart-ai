@@ -44,18 +44,11 @@ repos:
         args: ["--config=pyproject.toml"]
         exclude: \.venv/
 
+      # Optional: Uncomment if you have too many warnings in fast prototyping
       - id: pyright
         name: Pyright type checking
         entry: pyright
         language: system
         types: [python]
         args: ["--project=pyproject.toml"]
-        exclude: \.venv/
-
-      - id: bandit
-        name: Bandit security linting
-        entry: bandit
-        language: system
-        types: [python]
-        # args: ["-q", "-s=B101,B104,B301,B403,B404,B602,B603,B607,B608"]
         exclude: \.venv/

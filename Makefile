@@ -3,9 +3,12 @@
 # Define the expected virtual environment path
 VENV_DIR := .venv
 
-# Declare phony targets to avoid conflicts with files
-.PHONY: check-venv qa build update
+.DEFAULT_GOAL := default
 
+# Declare phony targets to avoid conflicts with files
+.PHONY: check-venv qa build update all qa
+
+default: qa
 
 # Check if the correct virtual environment is active
 check-venv:
