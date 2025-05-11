@@ -87,16 +87,8 @@ With the environment set up, you can use tools like `make` to contribute to the 
 
     Executes the build process for the project.
 
+**Contributing Guidelines:**
+- Review our [Style Guide](styleguide.md) to ensure clear and descriptive commit messages and consistent coding standards.
+- See our [Contribution Guidelines](CONTRIBUTING.md) for details on the workflow and submission process.
+- Please abide by our [Code of Conduct](CODE_OF_CONDUCT.md) to help maintain a welcoming and collaborative community.
 
-
-## TODO: Script Improvements
-
-- Use `echo "✅ Success"` to indicate success.
-- Use `echo "❌ Failure"` to indicate failure.
-- Use `echo "⚠️ Warning"` to indicate warning.
-- Use `echo "ℹ️ Info"` to indicate info.
-- Use `echo "🔍 Debug"` to indicate debug.
-
----
-
-Feel free to expand this README with additional sections like **Installation**, **Usage**, **Contributing**, and **License** as needed.
