@@ -50,3 +50,8 @@ update: check-venv
 unused-packages:
 	@echo "🔍 Detecting unused packages..."
 	@deptry src
+
+test:
+	@echo "🔍 Running tests..."
+	@pytest -v --tb=short --disable-warnings --maxfail=1 || { echo "❌ Tests failed."; exit 1; }
+	@echo "✅ All tests passed!"

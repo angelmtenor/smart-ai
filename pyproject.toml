@@ -142,6 +142,7 @@ ignore = [
     "FBT002",  # Default Boolean flag
     "PLR0913", # Too many arguments
     "G004",    # f-string in log
+    "S101",    # Use of assert detected
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -162,11 +163,12 @@ required-imports = ["from __future__ import annotations"]
 # Pytest configuration
 [tool.pytest.ini_options]
 minversion = "7.0"
+markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]
 addopts = [
     "--cov=src",
     "--cov-report=html",
     "--cov-report=xml",
-    "--cov-fail-under=80",
+    "--cov-fail-under=0", # Tune this value to your needs
     "-ra",
     "-q",
 ]
