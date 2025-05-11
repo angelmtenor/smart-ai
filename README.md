@@ -3,7 +3,7 @@
 A Building Block for Generative AI Applications with state-of-the-art performance.
 
 ---
-
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](code_of_conduct.md)
 
 ## Package Information
 
@@ -16,10 +16,11 @@ A Building Block for Generative AI Applications with state-of-the-art performanc
 
 
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=FFD43B)
-[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
+![uv](https://img.shields.io/badge/uv-4baaaa?style=for-the-badge&logo=github)
 ![Ruff](https://img.shields.io/badge/Ruff-000000?style=for-the-badge&logo=ruff&logoColor=white)
-![Pyright](https://img.shields.io/badge/Pyright-20232A?style=for-the-badge&logo=pyright&logoColor=61DAFB)
+![Pyright](https://img.shields.io/badge/Pyright-61DAFB?style=for-the-badge&logo=pyright&logoColor=white)
 ![Pytest](https://img.shields.io/badge/Pytest-0A9DFF?style=for-the-badge&logo=pytest&logoColor=white)
+![Pre-commit](https://img.shields.io/badge/Pre--commit-FDA50F?style=for-the-badge&logo=pre-commit&logoColor=white)
 
 ---
 
