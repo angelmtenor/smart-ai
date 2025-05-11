@@ -182,6 +182,10 @@ main() {
 
     setup_nvm
 
+    # Add the directory where pipx installs binaries to PATH so that 'uv'
+    # and other tools are available in the current session
+    export PATH="$HOME/.local/bin:$PATH"
+
     verify_installations
     log success "Environment $mode completed."
 
