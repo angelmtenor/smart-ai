@@ -3,7 +3,8 @@
 # Author: Angel Martinez-Tenor, 2025. Adapted from https://github.com/angelmtenor/ds-template
 
 # Description: Sets up a Python project using pyproject.toml, managing a virtual env, and syncing dependencies with uv.
-# Usage: source ./setup.sh [--reset]
+# Usage: source ./setup.sh [--reset, --noqa]
+
 
 # Check if sourced
 [[ "${BASH_SOURCE[0]}" == "${0}" ]] && { echo -e "\e[31m❌ Script must be sourced: 'source $0'.\e[0m" >&2; exit 1; }
@@ -84,6 +85,10 @@ git flow init -d
 
 main "$@"
 
-make qa
+if ! [[ " $* " =~ " --noqa " ]]; then
+    make qa
+else
+    log info "Skipping QA as per --noqa flag."
+fi
 
 return 0

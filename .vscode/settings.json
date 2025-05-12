@@ -106,6 +106,7 @@
         "mypy",
         "myst",
         "noheader",
+        "noqa",
         "numpy",
         "nvidia",
         "nvtop",
