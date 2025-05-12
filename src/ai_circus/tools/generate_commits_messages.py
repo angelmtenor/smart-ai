@@ -195,6 +195,9 @@ def execute_commands(script_path: Path) -> None:
         choice = input("\nExecute these commands? (yes/no/edit): ").lower()
         if choice == "yes":
             try:
+                # Apply a git reset before any git add commands
+                subprocess.run(["git", "reset"], check=True)  # noqa: S603, S607
+                logger.info("git reset executed successfully")
                 subprocess.run(["/bin/bash", str(script_path)], check=True)  # noqa: S603
                 logger.info("Commands executed successfully")
                 break
@@ -229,6 +232,11 @@ async def main() -> None:
         execute_commands(script_path)
     except Exception as e:
         logger.error(f"Error: {e}")
+
+
+def run_main() -> None:
+    """Run the main function with asyncio (to be used as tool)"""
+    asyncio.run(main())
 
 
 if __name__ == "__main__":
