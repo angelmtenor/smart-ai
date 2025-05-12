@@ -118,8 +118,8 @@ def _resolve_log_filepath(
 
 # === Example usage ===
 if __name__ == "__main__":
-    log = init(level="INFO", save_log=True)
-    log.info("---- App Caller ----")
-    log.warning("This is a warning message")
-    log.error("This is an error message")
-    log.critical("This is a critical message")
+    logger = init(level="INFO", save_log=True)
+    logger.info("---- App Caller ----")
+    logger.warning("This is a warning message")
+    logger.error("This is an error message")
+    logger.critical("This is a critical message")

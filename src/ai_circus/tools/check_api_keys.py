@@ -11,11 +11,11 @@ from dataclasses import dataclass
 import httpx
 from dotenv import load_dotenv
 
-from ai_circus.core import logger
+from ai_circus.core import custom_logger
 from ai_circus.core.info import info_system
 
 # Initialize logger and load environment variables
-log = logger.init(level="INFO")
+logger = custom_logger.init(level="INFO")
 load_dotenv(override=True)
 
 
@@ -57,13 +57,13 @@ class APIClient:
                 response.raise_for_status()
                 return response.json()
         except httpx.HTTPError as e:
-            log.error(f"Failed to fetch {config.name} data: {e}")
+            logger.error(f"Failed to fetch {config.name} data: {e}")
             return None
 
 
 def main() -> None:
     """Main function to execute API data fetching."""
-    log.info("Starting the script...")
+    logger.info("Starting the script...")
     info_system()
 
     # API configurations
@@ -100,10 +100,10 @@ def main() -> None:
     for config in api_configs:
         api_key = api_keys.get(config.name, "")
         if not api_key:
-            log.warning(f"Skipping {config.name} API due to missing API key")
+            logger.warning(f"Skipping {config.name} API due to missing API key")
             checklist.append(f"[ ] {config.name}: missing API key (skipped)")
             continue
-        log.info(f"Fetching data from {config.name} API...")
+        logger.info(f"Fetching data from {config.name} API...")
         # Dynamically resolve headers, json, or params if they're callable
         config.headers = config.headers(api_key) if callable(config.headers) else config.headers
         config.json = config.json(api_key) if callable(config.json) else config.json
@@ -113,15 +113,15 @@ def main() -> None:
         data = client.fetch_data(config)
         if data:
             key = "data" if config.name == "OpenAI" else "items" if config.name == "Google" else "results"
-            log.info(f"{config.name} data retrieved: {data.get(key, [])[:1]}")
+            logger.info(f"{config.name} data retrieved: {data.get(key, [])[:1]}")
             checklist.append(f"[✔] {config.name}: data retrieved")
         else:
             checklist.append(f"[ ] {config.name}: call failed")
 
     # Print checklist summary
-    log.info("Checklist summary:")
+    logger.info("Checklist summary:")
     for item in checklist:
-        log.info(item)
+        logger.info(item)
 
 
 class SimpleClass:
@@ -133,7 +133,7 @@ class SimpleClass:
 
     def greet(self) -> None:
         """Print a greeting message."""
-        log.info(f"Hello, {self.name}!")
+        logger.info(f"Hello, {self.name}!")
 
 
 if __name__ == "__main__":

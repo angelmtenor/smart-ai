@@ -18,10 +18,10 @@ from typing import Any, TypeVar
 import cpuinfo
 import psutil
 
-from ai_circus.core import logger
+from ai_circus.core import custom_logger
 
 F = TypeVar("F", bound=Callable[..., Any])
-log = logger.get_logger(__name__)
+logger = custom_logger.get_logger(__name__)
 
 # Cached installed packages
 INSTALLED_PACKAGES = {dist.metadata["Name"]: dist.version for dist in distributions()}
@@ -32,7 +32,7 @@ DEFAULT_MODULES = ["httpx"]
 
 def info_os() -> None:
     """Log operating system version and architecture."""
-    log.info(f"{'OS':<25}{platform.platform()}")
+    logger.info(f"{'OS':<25}{platform.platform()}")
 
 
 def info_software(modules: list[str] | None = None) -> None:
@@ -40,14 +40,14 @@ def info_software(modules: list[str] | None = None) -> None:
     Log Python version and versions of specified modules.
 
     Args:
-        modules (list[str] | None): List of module names to log. If None, uses DEFAULT_MODULES.
+        modules (list[str] | None): List of module names to logger. If None, uses DEFAULT_MODULES.
     """
-    log.info(f"{'ENV':<25}{sys.prefix}")
-    log.info(f"{'PYTHON':<25}{sys.version.split('(', 1)[0].strip()}")
+    logger.info(f"{'ENV':<25}{sys.prefix}")
+    logger.info(f"{'PYTHON':<25}{sys.version.split('(', 1)[0].strip()}")
 
     for module in modules or DEFAULT_MODULES:
         version = "--N/A--" if module == "pickle" else INSTALLED_PACKAGES.get(module, "--NO--")
-        log.info(f" - {module:<22}{version}")
+        logger.info(f" - {module:<22}{version}")
 
 
 def info_hardware() -> None:
@@ -55,7 +55,7 @@ def info_hardware() -> None:
     cpu = cpuinfo.get_cpu_info().get("brand_raw", "Unknown CPU")
     cores = psutil.cpu_count(logical=True)
     ram_gb = round(psutil.virtual_memory().total / (1024**3))
-    log.info(f"{'MACHINE':<25}{cpu} ({cores} cores, {ram_gb} GB RAM)")
+    logger.info(f"{'MACHINE':<25}{cpu} ({cores} cores, {ram_gb} GB RAM)")
 
 
 def info_gpu() -> None:
@@ -64,12 +64,12 @@ def info_gpu() -> None:
         # Check if nvidia-smi is available
         nvidia_smi_path = shutil.which("nvidia-smi")
         if nvidia_smi_path is None:
-            log.info(f"{'GPU':<25}nvidia-smi not found")
+            logger.info(f"{'GPU':<25}nvidia-smi not found")
             return
 
         # Validate nvidia-smi path to ensure it's a known executable
         if not Path(nvidia_smi_path).is_file():
-            log.info(f"{'GPU':<25}Invalid nvidia-smi path")
+            logger.info(f"{'GPU':<25}Invalid nvidia-smi path")
             return
 
         # Run nvidia-smi command to get GPU info using full path
@@ -82,13 +82,13 @@ def info_gpu() -> None:
         )
         gpu_name = result.stdout.strip()
         if gpu_name:
-            log.info(f"{'GPU':<25}{gpu_name}")
+            logger.info(f"{'GPU':<25}{gpu_name}")
         else:
-            log.info(f"{'GPU':<25}No GPU detected")
+            logger.info(f"{'GPU':<25}No GPU detected")
     except subprocess.CalledProcessError:
-        log.info(f"{'GPU':<25}Error querying GPU (nvidia-smi failed)")
+        logger.info(f"{'GPU':<25}Error querying GPU (nvidia-smi failed)")
     except Exception as e:
-        log.info(f"{'GPU':<25}No GPU available ({e!s})")
+        logger.info(f"{'GPU':<25}No GPU available ({e!s})")
 
 
 def info_system(modules: list[str] | None = None) -> None:
@@ -103,8 +103,8 @@ def info_system(modules: list[str] | None = None) -> None:
     info_gpu()
     info_os()
     info_software(modules)
-    log.info(f"{'EXECUTION PATH':<25}{Path().absolute()}")
-    log.info(f"{'EXECUTION DATE':<25}{time.ctime()}")
+    logger.info(f"{'EXECUTION PATH':<25}{Path().absolute()}")
+    logger.info(f"{'EXECUTION DATE':<25}{time.ctime()}")
 
 
 def get_memory_usage(obj: object) -> float:

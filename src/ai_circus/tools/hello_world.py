@@ -6,11 +6,11 @@ from __future__ import annotations
 
 from dotenv import load_dotenv
 
-from ai_circus.core import logger
+from ai_circus.core import custom_logger
 from ai_circus.core.info import info_system
 
 # Initialize logger and load environment variables
-log = logger.init(level="INFO")
+logger = custom_logger.init(level="INFO")
 load_dotenv()
 
 
@@ -23,7 +23,7 @@ class SimpleClass:
 
     def greet(self) -> None:
         """Print a greeting message."""
-        log.info(f"Hello, {self.name}!")
+        logger.info(f"Hello, {self.name}!")
 
 
 def main() -> None:
