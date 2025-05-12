@@ -10,10 +10,10 @@
 # - Back up your existing ~/.bashrc:
 #   cp ~/.bashrc ~/.bashrc.bak
 # - Copy this file to your home directory:
-#   cp ~/.devcontainer/.bashrc ~/.bashrc
+#   cp .devcontainer/.bashrc ~/.bashrc
 # - Source the file to apply changes:
 #   source ~/.bashrc
-# - (Optional) Customize ~/.bash_aliases or setup.sh for additional settings.
+# - (Optional) Customize ~/.bash_aliases for additional settings.
 #
 # Prerequisites:
 # - Bash 4.0 or later (for features like histappend).
