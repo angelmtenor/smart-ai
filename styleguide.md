@@ -10,6 +10,14 @@ A commit message consists of three parts:
 - **Body** (Optional)
 - **Footer** (Optional)
 
+**Important Format: type: subject**
+
+- Begin your commit message with a valid type (e.g., feat, fix, docs) followed by a colon and a space.
+- The subject should be a concise, imperative summary (ideally ≤50 characters) that starts with a capital letter and avoids ending punctuation.
+
+Example:
+• feat: Add new authentication method
+
 ### Type
 The type indicates the nature of the change. Use one of the following:
 - `feat`: A new feature (e.g., adding a new model or functionality)
@@ -23,6 +31,7 @@ The type indicates the nature of the change. Use one of the following:
 - `release`: Creating a new release (e.g., publishing a Python package)
 - `perf`: Performance improvements (e.g., optimizing a query or algorithm)
 - `revert`: Reverting a previous commit (e.g., undoing a problematic change)
+- `clean`: Cleaning up code (e.g., removing unused files, functions, comments)
 
 ### Subject
 The subject is a concise summary of the change. It must:
@@ -63,21 +72,21 @@ The subject is a concise summary of the change. It must:
 
 ## Examples
 ### Basic Examples
-| Type      | Subject Example                                                        |
-|-----------|------------------------------------------------------------------------|
-| `feat`    | Add Ollama integration                                                 |
-| `docs`    | Add instructions for executing the open OCR app                        |
-| `refactor`| Move the missing features function to the helper library               |
-| `feat`    | Add a dummy classifier to the helper library                           |
-| `feat`    | Automate (stratified) training/test and features/target splits         |
-| `fix`     | Display categorical targets (previously not shown)                     |
-| `fix`     | Binary target parsed to float instead of int                           |
-| `perf`    | Optimize database query for faster performance                         |
-| `revert`  | Revert "feat: Add feature X" due to critical bug                       |
+```
+• feat: "Add Ollama integration"
+• docs: "Add instructions for executing the open OCR app"
+• refactor: "Move the missing features function to the helper library"
+• feat: "Add a dummy classifier to the helper library"
+• feat: "Automate (stratified) training/test and features/target splits"
+• fix: "Display categorical targets (previously not shown)"
+• fix: "Binary target parsed to float instead of int"
+• perf: "Optimize database query for faster performance"
+• revert: "Revert 'feat: Add feature X' due to critical bug"
 
+```
 ### Extended Example with Body and Footer
 ```
-feat!: Add new authentication mechanism
+feat: Add new authentication mechanism
 
 This commit introduces an OAuth2-based authentication method, replacing the deprecated basic auth system. The new method improves security and aligns with modern standards. Existing users will need to update their credentials.
 
