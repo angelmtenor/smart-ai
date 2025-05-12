@@ -1,39 +1,38 @@
+"""Tool to generate commit messages for staged, unstaged, and untracked files in a Git repository.
+Author: Angel Martinez-Tenor, 2025. Adapted from https://github.com/angelmtenor/ds-template
+"""
+
 from __future__ import annotations
 
 import asyncio
 import json
-import logging
-import os
 import re
 import subprocess
 from pathlib import Path
 from typing import Any
 
-from dotenv import load_dotenv
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_openai import ChatOpenAI
-from pydantic import SecretStr
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
-logger = logging.getLogger(__name__)
+from ai_circus.core import custom_logger
+from ai_circus.models import get_llm
 
+logger = custom_logger.init(level="INFO")
 # Load environment variables
-load_dotenv()
 
-# Configuration
-DEFAULT_LLM_PROVIDER = os.getenv("DEFAULT_LLM_PROVIDER", "openai")
-DEFAULT_LLM_MODEL = os.getenv("DEFAULT_LLM_MODEL", "gpt-4o-mini")
-BASE_BRANCH = os.getenv("BASE_BRANCH", "main")
+# # Configuration
+# DEFAULT_LLM_PROVIDER = os.getenv("DEFAULT_LLM_PROVIDER", "openai")
+# DEFAULT_LLM_MODEL = os.getenv("DEFAULT_LLM_MODEL", "gpt-4o-mini")
+# BASE_BRANCH = os.getenv("BASE_BRANCH", "main")
 
 
-async def get_llm() -> Any:
-    """Initialize and return the selected LLM."""
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise ValueError("OPENAI_API_KEY not set")
-    return ChatOpenAI(model=DEFAULT_LLM_MODEL, api_key=SecretStr(api_key))
+# async def get_llm() -> Any:
+#     """Initialize and return the selected LLM."""
+#     api_key = os.getenv("OPENAI_API_KEY")
+#     if not api_key:
+#         raise ValueError("OPENAI_API_KEY not set")
+#     return ChatOpenAI(model=DEFAULT_LLM_MODEL, api_key=SecretStr(api_key))
 
 
 def read_styleguide() -> str:
@@ -48,7 +47,7 @@ def read_styleguide() -> str:
 def run_git_command(command: list[str]) -> str:
     """Run a Git command and return its output."""
     try:
-        result = subprocess.run(command, capture_output=True, text=True, check=True)
+        result = subprocess.run(command, capture_output=True, text=True, check=True)  # noqa: S603
         return result.stdout.strip()
     except subprocess.CalledProcessError as e:
         logger.error(f"Git command failed: {e}")
@@ -99,7 +98,7 @@ async def generate_commit_messages(changes: list[dict[str, str]], styleguide: st
         logger.info("No changes to process")
         return []
 
-    llm = await get_llm()
+    llm = get_llm()
     prompt = ChatPromptTemplate.from_template(
         """
         You are a Git expert. Based on the following file change, generate a single commit message
@@ -118,14 +117,24 @@ async def generate_commit_messages(changes: list[dict[str, str]], styleguide: st
         **Output Format**:
         Your response must be only a JSON object in the following format:
         {{"group": "category", "files": ["{file}"], "message": "commit message summarizing all changes"}}
-        Do not include any additional text, code blocks, explanations, or comments. Ensure that the output is a valid JSON object.
+        Do not include any additional text, code blocks, explanations, or comments.
+        Ensure that the output is a valid JSON object.
 
         **Important**: Do not generate a commit message in plain text. Only return the JSON object as specified.
         """
     )
     chain = prompt | llm | StrOutputParser()
 
-    async def process_change(change):
+    async def process_change(change: dict[str, str]) -> dict[str, Any] | None:
+        """
+        Process a single file change and generate a commit message.
+
+        Args:
+            change (dict): A dictionary containing file change information.
+
+        Returns:
+            dict: A dictionary containing the generated commit message and group.
+        """
         result = await chain.ainvoke(
             {"styleguide": styleguide, "file": change["file"], "status": change["status"], "diff": change["diff"]}
         )
@@ -153,7 +162,16 @@ async def generate_commit_messages(changes: list[dict[str, str]], styleguide: st
 
 
 def write_commit_script(groups: list[dict[str, Any]]) -> Path:
-    """Write a shell script with git commands."""
+    """Write a shell script with git commands.
+
+    Args:
+        groups (list): A list of dictionaries containing commit messages and file groups.
+
+    Returns:
+        Path: The path to the generated shell script.
+
+
+    """
     script_path = Path("temp_output/commit_commands.sh")
     script_path.parent.mkdir(parents=True, exist_ok=True)
     with script_path.open("w") as f:
@@ -177,7 +195,7 @@ def execute_commands(script_path: Path) -> None:
         choice = input("\nExecute these commands? (yes/no/edit): ").lower()
         if choice == "yes":
             try:
-                subprocess.run(["/bin/bash", str(script_path)], check=True)
+                subprocess.run(["/bin/bash", str(script_path)], check=True)  # noqa: S603
                 logger.info("Commands executed successfully")
                 break
             except subprocess.CalledProcessError as e:
