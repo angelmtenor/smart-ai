@@ -17,25 +17,6 @@ from ai_circus.models import get_llm
 
 logger = custom_logger.init(level="INFO")
 
-# """A LangGraph-based intent detector integrating OpenAI or Google models."""
-
-# # Configuration (parameterized at module level)
-# MODEL_PROVIDER: str = "openai"  # Options: "openai" or "google"
-# OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "your-openai-api-key")
-# GOOGLE_API_KEY: str = os.getenv("GOOGLE_API_KEY", "your-google-api-key")
-# MODEL_NAME: str = "gpt-4o-mini" if MODEL_PROVIDER == "openai" else "gemini-2.0-flash"
-
-
-# # Initialize LLM based on provider
-# def get_llm() -> ChatOpenAI | ChatGoogleGenerativeAI:
-#     """Initialize and return the appropriate LLM based on the provider."""
-#     if MODEL_PROVIDER == "openai":
-#         return ChatOpenAI(model=MODEL_NAME, api_key=SecretStr(OPENAI_API_KEY))
-#     elif MODEL_PROVIDER == "google":
-#         return ChatGoogleGenerativeAI(model=MODEL_NAME, google_api_key=GOOGLE_API_KEY)
-#     else:
-#         raise ValueError("Unsupported model provider")
-
 
 # State definition
 class GraphState(BaseModel):
