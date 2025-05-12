@@ -1,4 +1,4 @@
-"""Enhanced module for ai-circus with HTTP requests and environment variables.
+"""Tool "Hello World" for AI Circus.
 Author: Angel Martinez-Tenor, 2025. Adapted from https://github.com/angelmtenor/ds-template
 """
 

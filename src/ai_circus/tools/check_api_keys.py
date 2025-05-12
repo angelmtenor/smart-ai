@@ -1,4 +1,4 @@
-"""Enhanced module for ai-circus with HTTP requests and environment variables.
+"""Tool: Check API Keys and Fetch Data from APIs
 Author: Angel Martinez-Tenor, 2025. Adapted from https://github.com/angelmtenor/ds-template
 """
 

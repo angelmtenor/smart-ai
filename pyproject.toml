@@ -33,10 +33,15 @@ classifiers = [
 
 # Main dependencies (it will always be installed and part of the package)
 dependencies = [
+    "gitpython>=3.1.44",
     "httpx>=0.28.1",
+    "langchain-core>=0.3.59",
+    "langchain-google-genai>=2.1.4",
+    "langchain-openai>=0.3.16",
     "loguru>=0.7.3",
     "psutil>=7.0.0",
     "py-cpuinfo>=9.0.0",
+    "pydantic>=2.11.4",
     "python-dotenv>=1.1.0",
 ]
 
