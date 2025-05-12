@@ -1,22 +1,17 @@
-"""Tool to Generate Commit Messages for AI Circus.
-Author: Angel Martinez-Tenor, 2025. Adapted from https://github.com/angelmtenor/ds-template
-"""
-
 from __future__ import annotations
 
 import asyncio
 import json
 import logging
 import os
+import re
 import subprocess
 from pathlib import Path
 from typing import Any
 
-import git
 from dotenv import load_dotenv
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
 from pydantic import SecretStr
 
@@ -28,68 +23,78 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 # Configuration
-DEFAULT_LLM_PROVIDER: str = os.getenv("DEFAULT_LLM_PROVIDER", "openai")
-DEFAULT_LLM_MODEL: str = os.getenv(
-    "DEFAULT_LLM_MODEL",
-    "gpt-4o-mini" if DEFAULT_LLM_PROVIDER == "openai" else "gemini-2.0-pro",
-)
-BASE_BRANCH: str = os.getenv("BASE_BRANCH", "main")  # Configurable base branch
+DEFAULT_LLM_PROVIDER = os.getenv("DEFAULT_LLM_PROVIDER", "openai")
+DEFAULT_LLM_MODEL = os.getenv("DEFAULT_LLM_MODEL", "gpt-4o-mini")
+BASE_BRANCH = os.getenv("BASE_BRANCH", "main")
+
 
 async def get_llm() -> Any:
-    """Initialize and return the selected LLM based on environment configuration."""
-    if DEFAULT_LLM_PROVIDER.lower() == "openai":
-        api_key = os.getenv("OPENAI_API_KEY")
-        if not api_key:
-            raise ValueError("OPENAI_API_KEY not set")
-        return ChatOpenAI(model=DEFAULT_LLM_MODEL, api_key=SecretStr(api_key))
-    elif DEFAULT_LLM_PROVIDER.lower() == "google":
-        api_key = os.getenv("GOOGLE_API_KEY")
-        if not api_key:
-            raise ValueError("GOOGLE_API_KEY not set")
-        return ChatGoogleGenerativeAI(model=DEFAULT_LLM_MODEL, google_api_key=api_key)
-    else:
-        raise ValueError(f"Unsupported LLM provider: {DEFAULT_LLM_PROVIDER}")
+    """Initialize and return the selected LLM."""
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise ValueError("OPENAI_API_KEY not set")
+    return ChatOpenAI(model=DEFAULT_LLM_MODEL, api_key=SecretStr(api_key))
+
 
 def read_styleguide() -> str:
     """Read the styleguide.md file or return a default style guide."""
     styleguide_path = Path("styleguide.md")
-    if not styleguide_path.exists():
-        return (
-            "Use clear, concise commit messages. Start with a verb, describe the "
-            "change, and keep it under 72 characters."
-        )
-    return styleguide_path.read_text()
+    default_styleguide = (
+        "Use clear, concise commit messages. Start with a verb, describe the change, and keep it under 72 characters."
+    )
+    return styleguide_path.read_text() if styleguide_path.exists() else default_styleguide
+
+
+def run_git_command(command: list[str]) -> str:
+    """Run a Git command and return its output."""
+    try:
+        result = subprocess.run(command, capture_output=True, text=True, check=True)
+        return result.stdout.strip()
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Git command failed: {e}")
+        return ""
+
 
 def get_changed_files() -> list[dict[str, str]]:
-    """Retrieve changed files on the current branch compared to the base branch."""
-    try:
-        repo = git.Repo(".")
-        # Check if base branch exists
-        if BASE_BRANCH not in repo.heads:
-            logger.error(f"Base branch '{BASE_BRANCH}' not found in repository")
-            return []
+    """Retrieve uncommitted changes (staged, unstaged, and untracked files)."""
+    changes = []
 
-        # Get diff for changed files
-        diff = repo.git.diff(f"origin/{BASE_BRANCH}...HEAD", name_status=True)
-        changes = []
-        for line in diff.splitlines():
-            parts = line.split("\t")
-            status = parts[0]
-            file_path = parts[2] if status.startswith("R") else parts[1]
-            # Verify file exists in working tree
-            if not Path(file_path).exists():
-                logger.warning(f"File {file_path} does not exist in working tree, skipping")
-                continue
-            # Properly format diff command with '--'
-            diff_content = repo.git.diff(f"origin/{BASE_BRANCH}...HEAD", "--", file_path)
+    # Staged changes
+    staged_files = run_git_command(["git", "diff", "--cached", "--name-status"])
+    for line in staged_files.splitlines():
+        status, file_path = line.split("\t", 1)
+        if Path(file_path).exists():
+            diff_content = run_git_command(["git", "diff", "--cached", "--", file_path])
+            if diff_content:
+                diff_lines = diff_content.splitlines()[:10]
+                diff_content = "\n".join(diff_lines) + "\n... (truncated)"
             changes.append({"file": file_path, "status": status, "diff": diff_content})
-        return changes
-    except git.GitCommandError as e:
-        logger.error(f"Git error: {e}")
-        return []
+
+    # Unstaged changes
+    unstaged_files = run_git_command(["git", "diff", "--name-status"])
+    for line in unstaged_files.splitlines():
+        status, file_path = line.split("\t", 1)
+        if Path(file_path).exists():
+            diff_content = run_git_command(["git", "diff", "--", file_path])
+            if diff_content:
+                diff_lines = diff_content.splitlines()[:10]
+                diff_content = "\n".join(diff_lines) + "\n... (truncated)"
+            changes.append({"file": file_path, "status": status, "diff": diff_content})
+
+    # Untracked files
+    untracked_files = run_git_command(["git", "ls-files", "--others", "--exclude-standard"]).splitlines()
+    for file_path in untracked_files:
+        if Path(file_path).exists():
+            changes.append({"file": file_path, "status": "A", "diff": "New file added"})
+
+    # Remove duplicates
+    unique_changes = list({change["file"]: change for change in changes}.values())
+    logger.debug(f"Detected changes: {unique_changes}")
+    return unique_changes
+
 
 async def generate_commit_messages(changes: list[dict[str, str]], styleguide: str) -> list[dict[str, Any]]:
-    """Group changes and generate commit messages based on the style guide."""
+    """Generate commit messages for the given changes."""
     if not changes:
         logger.info("No changes to process")
         return []
@@ -97,49 +102,60 @@ async def generate_commit_messages(changes: list[dict[str, str]], styleguide: st
     llm = await get_llm()
     prompt = ChatPromptTemplate.from_template(
         """
-        You are a Git expert. Group the following file changes into logical categories
-        (e.g., feature, bugfix, refactor, docs) based on their diffs. For each group,
-        generate a commit message following the provided style guide. Output the result
-        as a JSON list of objects with 'group', 'files', and 'message'.
+        You are a Git expert. Based on the following file change, generate a single commit message
+        summarizing all changes in the file, following the provided style guide. Classify the change
+        into a logical category (e.g., feature, bugfix, refactor, docs, setup).
 
         **Style Guide**:
         {styleguide}
 
-        **Changes**:
-        {changes}
+        **Change**:
+        File: {file}
+        Status: {status}
+        Diff (may be truncated to first 10 lines):
+        {diff}
 
         **Output Format**:
-        [
-            {{"group": "category", "files": ["file1", "file2"], "message": "message"}},
-            ...
-        ]
+        Your response must be only a JSON object in the following format:
+        {{"group": "category", "files": ["{file}"], "message": "commit message summarizing all changes"}}
+        Do not include any additional text, code blocks, explanations, or comments. Ensure that the output is a valid JSON object.
+
+        **Important**: Do not generate a commit message in plain text. Only return the JSON object as specified.
         """
     )
-
     chain = prompt | llm | StrOutputParser()
-    changes_str = "\n".join([f"File: {c['file']}, Status: {c['status']}\nDiff:\n{c['diff']}" for c in changes])
-    try:
-        result = await chain.ainvoke({"styleguide": styleguide, "changes": changes_str})
-        groups = json.loads(result.strip())
-        if not isinstance(groups, list):
-            logger.error("LLM output is not a valid JSON list")
-            return []
-        # Validate group structure
-        for group in groups:
+
+    async def process_change(change):
+        result = await chain.ainvoke(
+            {"styleguide": styleguide, "file": change["file"], "status": change["status"], "diff": change["diff"]}
+        )
+        logger.info(f"Raw LLM output for {change['file']}: {result}")
+        json_match = re.search(r"\{.*\}", result, re.DOTALL)
+        if not json_match:
+            logger.error(f"No JSON found in LLM output for {change['file']}")
+            return None
+        try:
+            group = json.loads(json_match.group(0))
             if not all(key in group for key in ["group", "files", "message"]):
-                logger.error(f"Invalid group structure: {group}")
-                return []
-        return groups
-    except json.JSONDecodeError as e:
-        logger.error(f"Error parsing LLM output as JSON: {e}")
-        return []
-    except Exception as e:
-        logger.error(f"Error generating commit messages: {e}")
-        return []
+                logger.error(f"Invalid JSON structure for {change['file']}: {group}")
+                return None
+            if group["files"] != [change["file"]]:
+                logger.error(f"Incorrect files in JSON for {change['file']}: {group['files']}")
+                return None
+            return group
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON parsing error for {change['file']}: {e}")
+            return None
+
+    tasks = [process_change(change) for change in changes]
+    groups = await asyncio.gather(*tasks)
+    return [group for group in groups if group is not None]
+
 
 def write_commit_script(groups: list[dict[str, Any]]) -> Path:
-    """Write a shell script with git add and commit commands for each group."""
-    script_path = Path("commit_commands.sh")
+    """Write a shell script with git commands."""
+    script_path = Path("temp_output/commit_commands.sh")
+    script_path.parent.mkdir(parents=True, exist_ok=True)
     with script_path.open("w") as f:
         f.write("#!/bin/bash\n\n")
         for group in groups:
@@ -150,41 +166,40 @@ def write_commit_script(groups: list[dict[str, Any]]) -> Path:
     script_path.chmod(0o755)
     return script_path
 
+
 def execute_commands(script_path: Path) -> None:
     """Execute the generated commit commands interactively."""
-    logger.info("Generated commit commands in %s", script_path)
+    logger.info(f"Generated commit commands in {script_path}")
     with script_path.open("r") as f:
-        logger.info("Commands:\n%s", f.read())
+        logger.info(f"Commands:\n{f.read()}")
 
     while True:
         choice = input("\nExecute these commands? (yes/no/edit): ").lower()
         if choice == "yes":
             try:
-                process = subprocess.Popen(["/bin/bash", str(script_path)])
-                process.communicate()
-                if process.returncode != 0:
-                    raise subprocess.CalledProcessError(process.returncode, process.args)
+                subprocess.run(["/bin/bash", str(script_path)], check=True)
                 logger.info("Commands executed successfully")
                 break
             except subprocess.CalledProcessError as e:
                 logger.error(f"Error executing commands: {e}")
                 break
         elif choice == "no":
-            logger.info("Commands not executed. Run them manually from %s", script_path)
+            logger.info(f"Commands not executed. Run them manually from {script_path}")
             break
         elif choice == "edit":
-            logger.info("Please edit %s and run it manually", script_path)
+            logger.info(f"Please edit {script_path} and run it manually")
             break
         else:
             logger.warning("Invalid choice. Please enter 'yes', 'no', or 'edit'")
 
+
 async def main() -> None:
-    """Main function to orchestrate commit message generation and execution."""
+    """Main function to generate and execute commit messages."""
     try:
         styleguide = read_styleguide()
         changes = get_changed_files()
         if not changes:
-            logger.info("No changes found on the current branch")
+            logger.info("No changes found")
             return
 
         groups = await generate_commit_messages(changes, styleguide)
@@ -196,6 +211,7 @@ async def main() -> None:
         execute_commands(script_path)
     except Exception as e:
         logger.error(f"Error: {e}")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

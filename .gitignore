@@ -84,3 +84,5 @@ notebooks_dev
 *.whl
 *.zip
 *pkl
+
+temp_output/
