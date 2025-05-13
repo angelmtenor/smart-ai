@@ -258,16 +258,18 @@ def log_round(round_num: int, state: GraphState, input_history: list) -> None:
     """Log round details in a structured format."""
     logger.info(
         f"Round {round_num} response:\n"
-        f"{json.dumps(
-            {
-                'input_history': input_history,
-                'question': state.user_input,
-                'intent_result': state.intent_output,
-                'retrieved_documents': state.retrieved_documents,
-                'response': state.response_output,
-            },
-            indent=2,
-        )}"
+        f"{
+            json.dumps(
+                {
+                    'input_history': input_history,
+                    'question': state.user_input,
+                    'intent_result': state.intent_output,
+                    'retrieved_documents': state.retrieved_documents,
+                    'response': state.response_output,
+                },
+                indent=2,
+            )
+        }"
     )
 
 
