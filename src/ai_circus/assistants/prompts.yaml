@@ -1,0 +1,124 @@
+intent_detection:
+  goal: |
+    <GOAL>
+    The goal is to determine the user's intent from the conversational input and history. This involves classifying
+    the input as "retrieve" (for information queries) or "no_retrieve" (for casual conversation or out-of-scope queries)
+    and, when needed, reformulating the query for efficient retrieval.
+    Additionally, the system identifies whether a new topic is introduced based on the context or changes in conversation.
+    </GOAL>
+
+  output_format: |
+    <OUTPUT_FORMAT>
+    ```json
+    {
+      "intent": "<retrieve or no_retrieve>",
+      "reformulated_question": "<reformulated question or empty string>",
+      "new_topic": <true or false>
+    }
+    ```
+    </OUTPUT_FORMAT>
+
+  instructions: |
+    <INSTRUCTIONS>
+    - Classify intent as "retrieve" for questions/requests (e.g., "Tell me about...") within retriever's scope (see
+      <CONTEXT_DOCUMENTS>). Use "no_retrieve" for non-info inputs (e.g., greetings, "I love coding") or out-of-scope queries.
+    - For "retrieve", reformulate into concise, keyword-focused query, removing fluff (e.g., "Can you tell me about X?"
+      becomes "X").
+    - For "no_retrieve", set reformulated_question to "".
+    - Set new_topic to true if history is empty or topic differs significantly from last input. False if topic is related
+      (e.g., two Python questions).
+    - Return JSON with keys: intent, reformulated_question, new_topic.
+    - Ensure valid JSON in ```json ... ```, no extra text outside JSON.
+    </INSTRUCTIONS>
+
+
+  context_scenario: |
+    <CONTEXT_SCENARIO>
+    This scenario describes an assistant equipped with comprehensive knowledge of Python programming, best practices,
+     and general technical topics. The assistant uses this context to respond accurately and maintain relevant conversation threads.
+    </CONTEXT_SCENARIO>
+
+  context_documents: |
+    <CONTEXT_DOCUMENTS>
+    Contains detailed resources and documents including Python development best practices, UV guide, pre-commit configurations,
+    Visual Studio Code setup for Python, AST API templates, Cookiecutter projects, popular Python libraries, and the use
+    of pydantic models, Python dataclass or Pydantic dataclass.
+    </CONTEXT_DOCUMENTS>
+
+  history: |
+    <HISTORY>
+    {conversation_history}
+    </HISTORY>
+
+  user_input: |
+    <USER_INPUT>
+    {user_input}
+    </USER_INPUT>
+
+  examples: |
+    <EXAMPLES>
+    - Input: "What's the weather in New York?"
+      Output: ```json
+      {
+        "intent": "retrieve",
+        "reformulated_question": "Current weather conditions in New York",
+        "new_topic": true
+      }
+      ```
+
+    - Input: "Hi, how are you?"
+      Output: ```json
+      {
+        "intent": "no_retrieve",
+        "reformulated_question": "",
+        "new_topic": false
+      }
+      ```
+
+    - Input: "Tell me about Python programming" (after asking about weather)
+      Output: ```json
+      {
+        "intent": "retrieve",
+        "reformulated_question": "Overview of Python programming language",
+        "new_topic": true
+      }
+      ```
+
+    - Input: "Can you tell me about the origins of the Python programming language?"
+      Output: ```json
+      {
+        "intent": "retrieve",
+        "reformulated_question": "Origins of the Python programming language",
+        "new_topic": true
+      }
+      ```
+
+    - Input: "What were the key milestones in Python's development?" (after asking about Python's origins)
+      Output: ```json
+      {
+        "intent": "retrieve",
+        "reformulated_question": "Key milestones in Python development",
+        "new_topic": false
+      }
+      ```
+
+    - Input: "What's the weather like today?" (after asking about Python milestones)
+      Output: ```json
+      {
+        "intent": "retrieve",
+        "reformulated_question": "Current weather conditions today",
+        "new_topic": true
+      }
+      ```
+
+    - Input: "What is my bank balance?" (out of document scope)
+      Output: ```json
+      {
+        "intent": "no_retrieve",
+        "reformulated_question": "",
+        "new_topic": true
+      }
+      ```
+    </EXAMPLES>
+
+
