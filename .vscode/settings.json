@@ -134,6 +134,7 @@
         "pyright",
         "pytest",
         "pyupgrade",
+        "Qdrant",
         "refurb",
         "repr",
         "rxvt",

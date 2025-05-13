@@ -1,42 +1,65 @@
 """
-This module provides a function to initialize and return a language model (LLM)
-based on the specified provider (OpenAI or Google). It uses environment variables to configure the LLM settings.
+This module provides functions to initialize and return a language model (LLM)
+and embedding model based on the specified provider (OpenAI or Google).
+It uses environment variables for configuration.
 Author: Angel Martinez-Tenor, 2025
 """
 
 from __future__ import annotations
 
 import os
-from typing import Literal, cast
+from typing import Literal
 
 from dotenv import load_dotenv
-from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_openai import ChatOpenAI
+from langchain_core.embeddings import Embeddings
+from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from pydantic import SecretStr
 
 load_dotenv(override=True)
 
-
 # Configuration
-DEFAULT_LLM_PROVIDER: Literal["openai", "google"] = cast(
-    Literal["openai", "google"], os.getenv("DEFAULT_LLM_PROVIDER", "openai")
-)
+DEFAULT_LLM_PROVIDER: Literal["openai", "google"] = os.getenv("DEFAULT_LLM_PROVIDER", "openai")  # type: ignore[attr-defined]
 DEFAULT_LLM_MODEL: str = os.getenv(
-    "DEFAULT_LLM_MODEL", "gpt-4o-mini" if DEFAULT_LLM_PROVIDER == "openai" else "gemini-2.0-pro"
+    "DEFAULT_LLM_MODEL", "gpt-4o-mini" if DEFAULT_LLM_PROVIDER == "openai" else "gemini-2.0-flash"
 )
-OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "your-openai-api-key")
-GOOGLE_API_KEY: str = os.getenv("GOOGLE_API_KEY", "your-google-api-key")
+API_KEYS: dict[Literal["openai", "google"], str] = {
+    "openai": os.getenv("OPENAI_API_KEY", ""),
+    "google": os.getenv("GOOGLE_API_KEY", ""),
+}
 
 
-def get_llm() -> ChatOpenAI | ChatGoogleGenerativeAI:
-    """Initialize and return the appropriate LLM based on the provider."""
-    if DEFAULT_LLM_PROVIDER == "openai":
-        if not OPENAI_API_KEY or OPENAI_API_KEY == "your-openai-api-key":
-            raise ValueError("OPENAI_API_KEY not set or invalid")
-        return ChatOpenAI(model=DEFAULT_LLM_MODEL, api_key=SecretStr(OPENAI_API_KEY))
-    elif DEFAULT_LLM_PROVIDER == "google":
-        if not GOOGLE_API_KEY or GOOGLE_API_KEY == "your-google-api-key":
-            raise ValueError("GOOGLE_API_KEY not set or invalid")
-        return ChatGoogleGenerativeAI(model=DEFAULT_LLM_MODEL, google_api_key=GOOGLE_API_KEY)
-    else:
-        raise ValueError(f"Unsupported LLM provider: {DEFAULT_LLM_PROVIDER}")
+def get_llm(provider: Literal["openai", "google"] = DEFAULT_LLM_PROVIDER) -> ChatOpenAI | ChatGoogleGenerativeAI:
+    """Initialize and return the LLM based on the provider."""
+    api_key = API_KEYS.get(provider)
+    if not api_key:
+        raise ValueError(f"{provider.upper()}_API_KEY not set")
+
+    if provider == "openai":
+        return ChatOpenAI(model=DEFAULT_LLM_MODEL, api_key=SecretStr(api_key))
+    if provider == "google":
+        return ChatGoogleGenerativeAI(model=DEFAULT_LLM_MODEL, google_api_key=api_key)
+    raise ValueError(f"Unsupported LLM provider: {provider}")
+
+
+def get_embeddings(provider: Literal["openai", "google"] = DEFAULT_LLM_PROVIDER) -> Embeddings:
+    """
+    Returns an embedding model based on the provider.
+
+    Args:
+        provider: Either "openai" or "google". Defaults to DEFAULT_LLM_PROVIDER.
+
+    Returns:
+        Embeddings: The selected embedding model.
+    """
+    api_key = API_KEYS.get(provider)
+    if not api_key:
+        raise ValueError(f"{provider.upper()}_API_KEY not set")
+
+    if provider == "openai":
+        return OpenAIEmbeddings(api_key=SecretStr(api_key))
+    if provider == "google":
+        return GoogleGenerativeAIEmbeddings(
+            model="models/gemini-embedding-exp-03-07", google_api_key=SecretStr(api_key)
+        )
+    raise ValueError(f"Invalid model provider: {provider}")
