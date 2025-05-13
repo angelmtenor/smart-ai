@@ -17,6 +17,7 @@ from langgraph.graph import END, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 from pydantic import BaseModel
 
+from ai_circus.assistants.retriever import Retriever
 from ai_circus.core import custom_logger
 from ai_circus.models import get_llm
 
@@ -28,6 +29,9 @@ def load_prompt_template(node: str) -> str:
     try:
         with resources.files("ai_circus.assistants").joinpath("prompts.yaml").open("r") as file:
             config = yaml.safe_load(file)
+        if not config:
+            logger.error("Prompts YAML file is empty")
+            raise ValueError("Prompts YAML file is empty")
         node_config = config.get(node, {})
         if not node_config:
             logger.error(f"No configuration found for node: {node}")
@@ -72,7 +76,7 @@ def load_prompt_template(node: str) -> str:
         prompt = "\r\n\r\n".join(part for part in prompt_parts if part)
 
         # Escape curly braces, preserving placeholders
-        placeholders = ["{conversation_history}", "{user_input}"]
+        placeholders = ["{conversation_history}", "{user_input}", "{retrieved_documents}"]
         for placeholder in placeholders:
             prompt = prompt.replace(placeholder, f"__TEMP_{placeholder[1:-1]}__")
         prompt = prompt.replace("{", "{{").replace("}", "}}")
@@ -84,7 +88,7 @@ def load_prompt_template(node: str) -> str:
             logger.error(f"Empty prompt generated for node: {node}")
             raise ValueError(f"Empty prompt for node: {node}")
 
-        logger.debug(f"Loaded prompt for {node}:\n\n {prompt}")
+        logger.debug(f"Loaded prompt for {node}:\n\n{prompt}")
         return prompt
     except FileNotFoundError as e:
         logger.error("Prompt YAML file not found")
@@ -102,6 +106,33 @@ INTENT_PROMPT = ChatPromptTemplate.from_template(load_prompt_template("intent_de
 NON_RETRIEVER_PROMPT = ChatPromptTemplate.from_template(load_prompt_template("non_retriever_response"))
 POST_RETRIEVER_PROMPT = ChatPromptTemplate.from_template(load_prompt_template("post_retriever_response"))
 
+# Initialize retriever with sample texts
+retriever_instance = Retriever()
+sample_texts = [
+    "Python is a versatile programming language suitable for web development, data science, and automation.",
+    "Following Python best practices ensures clean, maintainable, and efficient code.",
+    "Visual Studio Code is a popular IDE for Python development due to its extensive extensions.",
+    "Pydantic models provide robust data validation and serialization for Python applications.",
+    "The UV tool simplifies Python project management by handling dependencies and virtual environments.",
+    "Cookiecutter templates streamline the creation of standardized Python project structures.",
+    "Pre-commit hooks help enforce code quality by running linters and formatters before commits.",
+    "Popular Python libraries for data science include NumPy, pandas, and Matplotlib.",
+    "Python dataclasses reduce boilerplate code for classes with default attributes.",
+    "Pydantic dataclasses combine the benefits of Pydantic validation with dataclass simplicity.",
+    "The AST API in Python allows programmatic manipulation of code structures.",
+    "Setting up Visual Studio Code for Python involves installing the Python extension and configuring a linter.",
+    "Black is a widely used code formatter for ensuring consistent Python code style.",
+    "Flake8 is a popular linter for identifying style and logical issues in Python code.",
+    "The Python community emphasizes PEP 8 guidelines for readable and consistent code.",
+    "Pydantic is ideal for parsing and validating JSON data in API development.",
+    "Cookiecutter projects can be customized to include pre-configured testing and CI/CD setups.",
+    "The UV tool integrates with pyproject.toml for modern Python dependency management.",
+    "Pre-commit configurations can include checks for trailing whitespace and invalid YAML files.",
+    "Using virtual environments in Python isolates project dependencies for better reproducibility.",
+]
+retriever_instance.index_texts(sample_texts)
+retriever = retriever_instance.retriever
+
 
 class GraphState(BaseModel):
     """State model for intent detection and response graph."""
@@ -110,6 +141,7 @@ class GraphState(BaseModel):
     history: list[dict[str, str]] = []
     intent_output: dict[str, Any] = {}
     response_output: dict[str, Any] = {}
+    retrieved_documents: list[str] = []
 
 
 def process_llm_response(content: str) -> dict:
@@ -163,11 +195,32 @@ def non_retriever_response_node(state: GraphState) -> GraphState:
     return state
 
 
+def retriever_node(state: GraphState) -> GraphState:
+    """Retrieve relevant documents if the intent is 'retrieve'."""
+    if state.intent_output.get("intent") == "retrieve":
+        try:
+            if retriever is None:
+                logger.error("Retriever is not initialized")
+                raise ValueError("Retriever is not initialized")
+            reformulated_question = state.intent_output.get("reformulated_question", "")
+            docs = retriever.get_relevant_documents(reformulated_question)
+            state.retrieved_documents = [doc.page_content for doc in docs]
+            logger.debug(f"Retrieved {len(docs)} documents for query: {reformulated_question}")
+        except Exception as e:
+            logger.error(f"Failed to retrieve documents: {e}")
+            raise ValueError(f"Failed to retrieve documents: {e}") from e
+    return state
+
+
 def post_retriever_response_node(state: GraphState) -> GraphState:
     """Generate response for retrieval intents."""
     llm = get_llm()
     prompt = POST_RETRIEVER_PROMPT.format(
-        conversation_history=json.dumps(state.history, indent=2), user_input=state.user_input
+        conversation_history=json.dumps(state.history, indent=2),
+        user_input=state.user_input,
+        retrieved_documents=(
+            "\n".join(state.retrieved_documents) if state.retrieved_documents else "No relevant documents found."
+        ),
     )
     response = llm.invoke(prompt)
     response_output = process_llm_response(str(response.content))
@@ -183,15 +236,19 @@ def route_intent(state: GraphState) -> Literal["post_retriever", "non_retriever"
 
 
 def build_graph() -> CompiledStateGraph:
-    """Compile the intent detection and response workflow graph."""
+    """Compile the intent detection and response workflow graph with retriever node."""
     workflow = StateGraph(GraphState)
     workflow.add_node("intent_detector", intent_detector_node)
+    workflow.add_node("retriever", retriever_node)
     workflow.add_node("post_retriever", post_retriever_response_node)
     workflow.add_node("non_retriever", non_retriever_response_node)
     workflow.set_entry_point("intent_detector")
     workflow.add_conditional_edges(
-        "intent_detector", route_intent, {"post_retriever": "post_retriever", "non_retriever": "non_retriever"}
+        "intent_detector",
+        lambda state: "retriever" if state.intent_output.get("intent") == "retrieve" else "non_retriever",
+        {"retriever": "retriever", "non_retriever": "non_retriever"},
     )
+    workflow.add_edge("retriever", "post_retriever")
     workflow.add_edge("post_retriever", END)
     workflow.add_edge("non_retriever", END)
     return workflow.compile()
@@ -201,17 +258,16 @@ def log_round(round_num: int, state: GraphState, input_history: list) -> None:
     """Log round details in a structured format."""
     logger.info(
         f"Round {round_num} response:\n"
-        f"{
-            json.dumps(
-                {
-                    'input_history': input_history,
-                    'question': state.user_input,
-                    'intent_result': state.intent_output,
-                    'response': state.response_output,
-                },
-                indent=2,
-            )
-        }"
+        f"{json.dumps(
+            {
+                'input_history': input_history,
+                'question': state.user_input,
+                'intent_result': state.intent_output,
+                'retrieved_documents': state.retrieved_documents,
+                'response': state.response_output,
+            },
+            indent=2,
+        )}"
     )
 
 
