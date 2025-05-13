@@ -1,11 +1,13 @@
+# Prompt template for intent detection, non-retriever response generation, and post-retriever response generation
+# Author: Angel Martinez-Tenor, 2025
 scenario_description: |
   This scenario describes an assistant equipped with comprehensive knowledge of Python programming, best practices,
-  and general technical topics. The assistant uses this context to respond accurately and maintain relevant conversation threads.
+  and related technical topics. The assistant uses this context to respond accurately and maintain relevant conversation threads.
 
 scenario_documents: |
   Contains detailed resources and documents including Python development best practices, UV guide, pre-commit configurations,
   Visual Studio Code setup for Python, AST API templates, Cookiecutter projects, popular Python libraries, and the use
-  of pydantic models, Python dataclass or Pydantic dataclass.
+  of pydantic models, Python dataclass, or Pydantic dataclass.
 
 scenario_sample_questions: |
   - "What are the best practices for Python development?"
@@ -39,7 +41,7 @@ intent_detection:
       becomes "X").
     - For "no_retrieve", set reformulated_question to "".
     - Set new_topic to true if history is empty or topic differs significantly from last input. False if topic is related
-      (e.g., two Python questions).
+      (e.g., two questions within the scenario scope).
     - Return JSON with keys: intent, reformulated_question, new_topic.
     - Ensure valid JSON in ```json ... ```, no extra text outside JSON.
 
@@ -77,7 +79,6 @@ intent_detection:
       }
       ```
 
-
     - Input: "What were the key milestones in Python's development?"
       Output: ```json
       {
@@ -86,7 +87,6 @@ intent_detection:
         "new_topic": false
       }
       ```
-
 
     - Input: "What is my bank balance?"
       Output: ```json
@@ -100,8 +100,7 @@ intent_detection:
 non_retriever_response:
   goal: |
     The goal is to generate a natural, engaging response for inputs classified as "no_retrieve" (e.g., chit-chat,
-    greetings, or out-of-scope queries) while encouraging the user to ask about Python programming, best practices,
-    or related technical topics as outlined in the scenario_description and scenario_documents.
+    greetings, or out-of-scope queries) while encouraging the user to ask about topics outlined in the scenario_description and scenario_documents.
 
   output_format: |
     ```json
@@ -114,10 +113,8 @@ non_retriever_response:
   instructions: |
     - Generate a response for "no_retrieve" inputs (e.g., greetings like "Hi!" or out-of-scope queries like "What's my bank balance?").
     - Use a friendly, conversational tone, acknowledging the user's input (e.g., "Hey, good to hear from you!" for greetings).
-    - Encourage the user to ask about topics in scenario_description and scenario_documents, such as Python programming,
-      popular libraries (e.g., NumPy, Pydantic), best practices, or tools like UV or Cookiecutter.
-    - For out-of-scope queries, politely indicate the limitation and suggest a specific in-scope topic
-      (e.g., "I can’t check bank balances, but how about exploring Python’s Pydantic models?").
+    - Encourage the user to ask about topics in scenario_description and scenario_documents.
+    - For out-of-scope queries, politely indicate the limitation and suggest a specific in-scope topic.
     - Set is_within_scope to false, as "no_retrieve" responses do not use retrieved data.
     - Return JSON with keys: response, is_within_scope.
     - Ensure valid JSON in ```json ... ```, no extra text outside JSON.
@@ -140,7 +137,8 @@ non_retriever_response:
     - Input: "I love coding!"
       Output: ```json
       {
-        "response": "That's the spirit! Since you love coding, how about diving into some Python best practices or exploring libraries like Pandas for data analysis?",
+        "response": "That's the spirit! Since you love coding, how about diving into some Python best practices or exploring
+        libraries like Pandas for data analysis?",
         "is_within_scope": false
       }
       ```
@@ -148,7 +146,8 @@ non_retriever_response:
     - Input: "What is my bank balance?"
       Output: ```json
       {
-        "response": "Sorry, I can't access bank balances, but I can help with Python! How about setting up a Python project with Cookiecutter or learning about pre-commit hooks?",
+        "response": "Sorry, I can't access bank balances, but I can help with Python! How about setting up a Python
+         project with Cookiecutter or learning about pre-commit hooks?",
         "is_within_scope": false
       }
       ```
@@ -156,7 +155,8 @@ non_retriever_response:
     - Input: "Nice day today, isn't it?" (after asking about weather)
       Output: ```json
       {
-        "response": "Totally agree, it's a great day! Fancy chatting about Python? I could tell you about using Visual Studio Code for Python development.",
+        "response": "Totally agree, it's a great day! Fancy chatting about Python? I could tell you about using
+        Visual Studio Code for Python development.",
         "is_within_scope": false
       }
       ```
@@ -178,9 +178,8 @@ post_retriever_response:
   instructions: |
     - Generate a response for "retrieve" intents using data from the retriever (aligned with scenario_documents).
     - Ensure the response is concise, accurate, and directly addresses the reformulated question.
-    - Use a clear, engaging tone, incorporating specific details (e.g., Python library features, best practices).
-    - Set is_within_scope to true if the response uses scenario_documents data, false if the query is out-of-scope
-      (e.g., weather queries not covered by scenario_documents).
+    - Use a clear, engaging tone, incorporating specific details.
+    - Set is_within_scope to true if the response uses scenario_documents data, false if the query is out-of-scope.
     - Return JSON with keys: response, is_within_scope.
     - Ensure valid JSON in ```json ... ```, no extra text outside JSON.
 
@@ -194,16 +193,18 @@ post_retriever_response:
     - Input: "Tell me about Python programming"
       Output: ```json
       {
-        "response": "Python is a versatile, high-level programming language known for its readability and simplicity. It supports multiple paradigms like object-oriented and functional programming. Popular for web development, data science, and automation, it boasts a rich ecosystem of libraries like NumPy, Pandas, and Django. Want to explore a specific Python topic?",
+        "response": "Python is a versatile, high-level programming language known for its readability and simplicity.
+         It supports multiple paradigms like object-oriented and functional programming. Popular for web development, data science, and automation, it boasts a rich ecosystem of libraries like NumPy, Pandas, and Django. Want to explore a specific Python topic?",
         "is_within_scope": true
       }
       ```
 
-
-    - Input: "What were the key milestones in Python's development?" )
+    - Input: "What were the key milestones in Python's development?"
       Output: ```json
       {
-        "response": "Key milestones in Python's development include Python 2.0 in 2000, introducing list comprehensions; Python 3.0 in 2008, with backward-incompatible changes for modernization; and the end of Python 2 support in 2020. Recent versions emphasize performance, like the faster CPython in 3.11 (2022). Anything specific about Python you'd like to dive into?",
+        "response": "Key milestones in Python's development include Python 2.0 in 2000, introducing list comprehensions;
+         Python 3.0 in 2008, with backward-incompatible changes for modernization; and the end of Python 2 support in 2020.
+         Recent versions emphasize performance, like the faster CPython in 3.11 (2022). Anything specific about Python you'd like to dive into?",
         "is_within_scope": true
       }
       ```
