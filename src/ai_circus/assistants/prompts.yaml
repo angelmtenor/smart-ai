@@ -189,6 +189,9 @@ post_retriever_response:
   user_input: |
     {user_input}
 
+  retrieved_documents: |
+    {retrieved_documents}
+
   examples: |
     - Input: "Tell me about Python programming"
       Output: ```json
