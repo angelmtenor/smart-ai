@@ -1,3 +1,7 @@
+"""Basic intent detector and retriever.
+Author: Angel Martinez-Tenor, 2025. Adapted from https://github.com/angelmtenor/ds-template
+"""
+
 from __future__ import annotations
 
 import json
@@ -53,13 +57,13 @@ def load_prompt_template(node: str) -> str:
         return prompt
     except FileNotFoundError:
         logger.error("Prompt YAML file not found in ai_circus.assistants")
-        raise FileNotFoundError("Could not find prompts.yaml in ai_circus.assistants")
+        raise FileNotFoundError("Could not find prompts.yaml in ai_circus.assistants") from None
     except yaml.YAMLError as e:
         logger.error(f"Failed to parse YAML file: {e}")
-        raise ValueError(f"Invalid YAML format in prompts.yaml: {e}")
+        raise ValueError(f"Invalid YAML format in prompts.yaml: {e}") from e
     except Exception as e:
         logger.error(f"Failed to load prompts.yaml from package: {e}")
-        raise ValueError(f"Error accessing prompts.yaml: {e}")
+        raise ValueError(f"Error accessing prompts.yaml: {e}") from e
 
 
 # Prompt Templates
