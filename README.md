@@ -1,6 +1,6 @@
 # ai-circus
 
-A Building Block for Generative AI Applications with state-of-the-art performance.
+A Building Block for Generative AI Tools Applications with state-of-the-art performance.
 
 ---
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](code_of_conduct.md)
@@ -24,9 +24,42 @@ A Building Block for Generative AI Applications with state-of-the-art performanc
 
 ---
 
-## Setup
+## Getting Started – Package Usage
 
-To properly set up your machine for development, follow these steps. These steps are designed for Debian/Ubuntu-based systems. Execute these commands in the root folder of the cloned project.
+This project requires Python 3.13 or later. We highly recommend using a virtual environment to manage dependencies and avoid conflicts with system packages. Follow these steps to get started:
+
+1.  Install the package using pip:
+    ```bash
+    pip install ai-circus
+    ```
+    Alternatively, if you prefer using uv, run:
+    ```bash
+    uv add ai-circus
+    ```
+
+2.  Set up your environment configuration:
+    - Copy the provided template file to create your environment settings:
+      ```bash
+      cp env.example .env
+      ```
+    - Open the newly created `.env` file and update the required environment variables (the OpenAI key is mandatory).
+    3. Test the available tools:
+
+    Open your terminal and run the following commands associated with the import:
+
+    - `ai-hello-world`: Executes a simple "Hello, World!" example.
+    - `ai-check-api-key`: Verifies the settings in your `.env` file by checking the OpenAI, Google, and Tavily API keys.
+    - `ai-commit`: Automates the process of committing changes in your current repository.
+
+## Development Setup
+
+To set up your machine for development (recommended for Debian/Ubuntu-based systems), execute the following commands in the root directory of your cloned project:
+
+- Prepare your system by running the appropriate setup scripts.
+- These scripts will install necessary dependencies and configure your development environment.
+
+This setup ensures that your machine is properly configured and ready for efficient development.
+
 
 ### One-Time Setup
 
