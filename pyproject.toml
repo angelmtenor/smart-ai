@@ -36,6 +36,7 @@ dependencies = [
     "gitpython>=3.1.44",
     "httpx>=0.28.1",
     "langchain>=0.3.25",
+    "langchain-community>=0.3.24",
     "langchain-core>=0.3.59",
     "langchain-google-genai>=2.1.4",
     "langchain-openai>=0.3.16",
@@ -45,6 +46,7 @@ dependencies = [
     "py-cpuinfo>=9.0.0",
     "pydantic>=2.11.4",
     "python-dotenv>=1.1.0",
+    "qdrant-client>=1.14.2",
 ]
 
 [project.urls]
