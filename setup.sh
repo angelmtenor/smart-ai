@@ -36,7 +36,7 @@ main() {
     # Deactivate any existing virtual environment
     if [[ -n "${VIRTUAL_ENV:-}" ]]; then
         log info "Deactivating existing virtual environment (${VIRTUAL_ENV})..."
-        deactivate || { log error "Failed to deactivate existing virtual environment."; return 1; }
+        deactivate || { log warning "Failed to deactivate existing virtual environment.";}
         log success "Existing virtual environment deactivated."
     fi
 
