@@ -134,6 +134,7 @@
         "pyright",
         "pytest",
         "pyupgrade",
+        "qdrant",
         "Qdrant",
         "refurb",
         "repr",
@@ -147,6 +148,8 @@
         "testpaths",
         "unicode",
         "uvicorn",
+        "vectorstore",
+        "vectorstores",
         "venv",
         "virtualenv",
         "xclip"
