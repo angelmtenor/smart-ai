@@ -87,14 +87,6 @@ intent_detection:
       }
       ```
 
-    - Input: "What's the weather like today?"
-      Output: ```json
-      {
-        "intent": "retrieve",
-        "reformulated_question": "Current weather conditions today",
-        "new_topic": true
-      }
-      ```
 
     - Input: "What is my bank balance?"
       Output: ```json
