@@ -1,6 +1,12 @@
+"""
+Sample Assistant for Intent Detection and Document Retrieval.
+Author: Angel Martinez-Tenor, 2025.
+"""
+
 from __future__ import annotations
 
 import json
+from collections.abc import Sequence
 from typing import TypedDict
 
 from langgraph.graph.state import CompiledStateGraph
@@ -25,7 +31,7 @@ class DocumentChunk(TypedDict):
     metadata: dict
 
 
-def extract_document_chunks(file_path: str, chunk_size: int, chunk_overlap: int) -> list[DocumentChunk]:
+def extract_document_chunks(file_path: str, chunk_size: int, chunk_overlap: int) -> Sequence[DocumentChunk]:
     """Extract and chunk documents from the specified file.
 
     Args:
@@ -50,7 +56,7 @@ def extract_document_chunks(file_path: str, chunk_size: int, chunk_overlap: int)
             include_metadata=True,
         )
         logger.info(f"Extracted {len(chunks)} chunks from {file_path}")
-        return chunks
+        return [{"page_content": doc.page_content, "metadata": doc.metadata} for doc in chunks]
     except Exception as e:
         logger.error(f"Failed to extract document chunks from {file_path}: {e}")
         raise ValueError(f"Document extraction failed: {e}") from e
@@ -71,8 +77,8 @@ def initialize_document_retriever(chunks: list[DocumentChunk]) -> Retriever:
     try:
         retriever = Retriever()
         retriever.add_texts(
-            texts=[chunk.page_content for chunk in chunks],
-            metadatas=[chunk.metadata for chunk in chunks],
+            texts=[chunk["page_content"] for chunk in chunks],
+            metadatas=[chunk["metadata"] for chunk in chunks],
         )
         logger.info("Retriever initialized with document chunks")
         return retriever
@@ -88,7 +94,8 @@ def process_user_query(
     document_path: str,
     chunk_index: int | None = None,
 ) -> tuple[str, list[dict[str, str]], dict, dict]:
-    """Process a user query through the assistant graph and return the response, updated history, intent output, and response output.
+    """Process a user query through the assistant graph and return the response, updated history, intent output, and
+      response output.
 
     Args:
         graph: The compiled intent detection graph.
@@ -98,7 +105,8 @@ def process_user_query(
         chunk_index: The document chunk index for metadata logging (optional).
 
     Returns:
-        tuple[str, list[dict[str, str]], dict, dict]: The response text, updated conversation history, intent output, and response output.
+        tuple[str, list[dict[str, str]], dict, dict]: The response text, updated conversation history, intent output,
+          and response output.
 
     Raises:
         ValueError: If query processing fails.
@@ -128,7 +136,8 @@ def process_user_query(
 
 
 def run_assistant_workflow() -> None:
-    """Orchestrate the assistant workflow with multiple test conversations, logging intent results, assistant response, and document filename.
+    """Orchestrate the assistant workflow with multiple test conversations, logging intent results, assistant response,
+    and document filename.
 
     Raises:
         ValueError: If any step in the workflow fails.
@@ -145,7 +154,7 @@ def run_assistant_workflow() -> None:
         logger.info(f"Document extraction completed for {SAMPLE_FILE_PATH}")
 
         # Initialize retriever
-        retriever = initialize_document_retriever(document_chunks)
+        retriever = initialize_document_retriever(list(document_chunks))
         logger.info("Retriever setup completed")
 
         # Build assistant graph
