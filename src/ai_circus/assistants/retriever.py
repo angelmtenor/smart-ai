@@ -5,13 +5,16 @@ Author: Angel Martinez-Tenor, 2025.
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Literal
 
 from langchain.embeddings.base import Embeddings
+from langchain.retrievers.ensemble import EnsembleRetriever
 from langchain.schema import Document
-from langchain.vectorstores import FAISS, Qdrant
-from langchain_community.retrievers import BM25Retriever, EnsembleRetriever
+from langchain_community.retrievers import BM25Retriever
+from langchain_community.vectorstores import FAISS
 from langchain_core.retrievers import BaseRetriever
+from langchain_qdrant import Qdrant
 from qdrant_client import QdrantClient
 
 from ai_circus.core import custom_logger
@@ -52,24 +55,30 @@ class Retriever(BaseRetriever):
         """
         super().__init__()  # Initialize BaseRetriever
         if embeddings is None:
-            self.embeddings: Embeddings = get_embeddings(model_choice)
+            object.__setattr__(self, "embeddings", get_embeddings(model_choice))
         else:
-            self.embeddings = embeddings
+            object.__setattr__(self, "embeddings", embeddings)
 
-        self.vector_db = vector_db
-        self.hybrid = hybrid
-        self.default_k = default_k
+        # Set additional attributes using object.__setattr__
+        object.__setattr__(self, "vector_db", vector_db)
+        object.__setattr__(self, "hybrid", hybrid)
+        object.__setattr__(self, "default_k", default_k)
 
         if vector_db == "qdrant":
+            qdrant_path = str(Path(qdrant_path))  # Ensure path is string
             client = QdrantClient(path=qdrant_path)
-            self.vectorstore = Qdrant(client=client, collection_name=collection_name, embeddings=self.embeddings)
+            object.__setattr__(
+                self, "vectorstore", Qdrant(client=client, collection_name=collection_name, embeddings=self.embeddings)
+            )
         elif vector_db == "faiss":
-            self.vectorstore = FAISS.from_texts([], self.embeddings)
+            # Initialize empty FAISS index without texts
+            object.__setattr__(self, "vectorstore", FAISS.from_texts([""], self.embeddings))
+            self.vectorstore.delete([self.vectorstore.index_to_docstore_id[0]])  # Remove dummy document
         else:
             raise ValueError(f"Unsupported vector_db: {vector_db}")
 
         if hybrid:
-            self.documents: list[Document] = []
+            object.__setattr__(self, "documents", [])
 
         logger.info(
             f"Retriever initialized with model: {model_choice if embeddings is None else 'custom'}, "
@@ -84,10 +93,16 @@ class Retriever(BaseRetriever):
             texts (list[str]): List of text documents to add.
             metadatas (list[dict], optional): List of metadata dictionaries for each text.
         """
-        documents = [
-            Document(page_content=text, metadata=meta)
-            for text, meta in zip(texts, metadatas or [{}] * len(texts), strict=False)
-        ]
+        if not texts:
+            logger.warning("No texts provided to add_texts")
+            return
+
+        if metadatas is None:
+            metadatas = [{}] * len(texts)
+        if len(texts) != len(metadatas):
+            raise ValueError(f"Length of texts ({len(texts)}) must match metadatas ({len(metadatas)})")
+
+        documents = [Document(page_content=text, metadata=meta) for text, meta in zip(texts, metadatas, strict=True)]
         self.vectorstore.add_documents(documents)
         if self.hybrid:
             self.documents.extend(documents)
@@ -104,6 +119,10 @@ class Retriever(BaseRetriever):
         Returns:
             list[Document]: List of relevant documents.
         """
+        if not query.strip():
+            logger.warning("Empty query provided")
+            return []
+
         if self.hybrid:
             vector_retriever = self.vectorstore.as_retriever(search_kwargs={"k": k})
             bm25_retriever = BM25Retriever.from_documents(self.documents, k=k)
@@ -111,13 +130,13 @@ class Retriever(BaseRetriever):
                 retrievers=[vector_retriever, bm25_retriever],
                 weights=[0.5, 0.5],  # Equal weighting for vector and BM25
             )
-            return ensemble_retriever.get_relevant_documents(query)
+            return ensemble_retriever.invoke(query)
         else:
-            return self.vectorstore.as_retriever(search_kwargs={"k": k}).get_relevant_documents(query)
+            return self.vectorstore.as_retriever(search_kwargs={"k": k}).invoke(query)
 
-    def get_relevant_documents(self, query: str) -> list[Document]:
+    def _get_relevant_documents(self, query: str) -> list[Document]:
         """
-        Retrieve relevant documents using the default k value, as required by BaseRetriever.
+        Implement abstract retrieval method required by BaseRetriever.
 
         Args:
             query (str): The query string.
