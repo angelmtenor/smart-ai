@@ -101,39 +101,6 @@ def load_prompt_template(node: str) -> str:
         raise ValueError(f"Failed to load prompts.yaml: {e}") from e
 
 
-# Prompt Templates
-INTENT_PROMPT = ChatPromptTemplate.from_template(load_prompt_template("intent_detection"))
-NON_RETRIEVER_PROMPT = ChatPromptTemplate.from_template(load_prompt_template("non_retriever_response"))
-POST_RETRIEVER_PROMPT = ChatPromptTemplate.from_template(load_prompt_template("post_retriever_response"))
-
-# Initialize retriever with sample texts
-retriever_instance = Retriever()
-sample_texts = [
-    "Python is a versatile programming language suitable for web development, data science, and automation.",
-    "Following Python best practices ensures clean, maintainable, and efficient code.",
-    "Visual Studio Code is a popular IDE for Python development due to its extensive extensions.",
-    "Pydantic models provide robust data validation and serialization for Python applications.",
-    "The UV tool simplifies Python project management by handling dependencies and virtual environments.",
-    "Cookiecutter templates streamline the creation of standardized Python project structures.",
-    "Pre-commit hooks help enforce code quality by running linters and formatters before commits.",
-    "Popular Python libraries for data science include NumPy, pandas, and Matplotlib.",
-    "Python dataclasses reduce boilerplate code for classes with default attributes.",
-    "Pydantic dataclasses combine the benefits of Pydantic validation with dataclass simplicity.",
-    "The AST API in Python allows programmatic manipulation of code structures.",
-    "Setting up Visual Studio Code for Python involves installing the Python extension and configuring a linter.",
-    "Black is a widely used code formatter for ensuring consistent Python code style.",
-    "Flake8 is a popular linter for identifying style and logical issues in Python code.",
-    "The Python community emphasizes PEP 8 guidelines for readable and consistent code.",
-    "Pydantic is ideal for parsing and validating JSON data in API development.",
-    "Cookiecutter projects can be customized to include pre-configured testing and CI/CD setups.",
-    "The UV tool integrates with pyproject.toml for modern Python dependency management.",
-    "Pre-commit configurations can include checks for trailing whitespace and invalid YAML files.",
-    "Using virtual environments in Python isolates project dependencies for better reproducibility.",
-]
-retriever_instance.index_texts(sample_texts)
-retriever = retriever_instance.retriever
-
-
 class GraphState(BaseModel):
     """State model for intent detection and response graph."""
 
@@ -274,6 +241,38 @@ def log_round(round_num: int, state: GraphState, input_history: list) -> None:
 
 
 if __name__ == "__main__":
+    # Prompt Templates
+    INTENT_PROMPT = ChatPromptTemplate.from_template(load_prompt_template("intent_detection"))
+    NON_RETRIEVER_PROMPT = ChatPromptTemplate.from_template(load_prompt_template("non_retriever_response"))
+    POST_RETRIEVER_PROMPT = ChatPromptTemplate.from_template(load_prompt_template("post_retriever_response"))
+
+    # Initialize retriever with sample texts
+    retriever_instance = Retriever()
+    sample_texts = [
+        "Python is a versatile programming language suitable for web development, data science, and automation.",
+        "Following Python best practices ensures clean, maintainable, and efficient code.",
+        "Visual Studio Code is a popular IDE for Python development due to its extensive extensions.",
+        "Pydantic models provide robust data validation and serialization for Python applications.",
+        "The UV tool simplifies Python project management by handling dependencies and virtual environments.",
+        "Cookiecutter templates streamline the creation of standardized Python project structures.",
+        "Pre-commit hooks help enforce code quality by running linters and formatters before commits.",
+        "Popular Python libraries for data science include NumPy, pandas, and Matplotlib.",
+        "Python dataclasses reduce boilerplate code for classes with default attributes.",
+        "Pydantic dataclasses combine the benefits of Pydantic validation with dataclass simplicity.",
+        "The AST API in Python allows programmatic manipulation of code structures.",
+        "Setting up Visual Studio Code for Python involves installing the Python extension and configuring a linter.",
+        "Black is a widely used code formatter for ensuring consistent Python code style.",
+        "Flake8 is a popular linter for identifying style and logical issues in Python code.",
+        "The Python community emphasizes PEP 8 guidelines for readable and consistent code.",
+        "Pydantic is ideal for parsing and validating JSON data in API development.",
+        "Cookiecutter projects can be customized to include pre-configured testing and CI/CD setups.",
+        "The UV tool integrates with pyproject.toml for modern Python dependency management.",
+        "Pre-commit configurations can include checks for trailing whitespace and invalid YAML files.",
+        "Using virtual environments in Python isolates project dependencies for better reproducibility.",
+    ]
+    retriever_instance.add_texts(sample_texts)
+    retriever = retriever_instance
+
     graph = build_graph()
     history = []
 
