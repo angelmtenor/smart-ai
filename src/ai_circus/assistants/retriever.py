@@ -23,6 +23,31 @@ logger = custom_logger.init(level="DEBUG")
 class Retriever(BaseRetriever):
     """Retriever class for indexing and querying documents using FAISS, with optional hybrid BM25 retrieval."""
 
+    @property
+    def embeddings(self) -> Embeddings:
+        """Return the embeddings instance."""
+        return object.__getattribute__(self, "_embeddings")
+
+    @property
+    def hybrid(self) -> bool:
+        """Return whether hybrid retrieval is enabled."""
+        return object.__getattribute__(self, "_hybrid")
+
+    @property
+    def default_k(self) -> int:
+        """Return the default number of documents to retrieve."""
+        return object.__getattribute__(self, "_default_k")
+
+    @property
+    def vectorstore(self) -> FAISS:
+        """Return the FAISS vectorstore."""
+        return object.__getattribute__(self, "_vectorstore")
+
+    @property
+    def documents(self) -> list[Document]:
+        """Return the list of documents for hybrid retrieval."""
+        return object.__getattribute__(self, "_documents")
+
     def __init__(
         self,
         embeddings: Embeddings | None = None,
@@ -42,20 +67,20 @@ class Retriever(BaseRetriever):
         """
         super().__init__()  # Initialize BaseRetriever
         if embeddings is None:
-            object.__setattr__(self, "embeddings", get_embeddings(model_choice))
+            object.__setattr__(self, "_embeddings", get_embeddings(model_choice))
         else:
-            object.__setattr__(self, "embeddings", embeddings)
+            object.__setattr__(self, "_embeddings", embeddings)
 
         # Set additional attributes using object.__setattr__
-        object.__setattr__(self, "hybrid", hybrid)
-        object.__setattr__(self, "default_k", default_k)
+        object.__setattr__(self, "_hybrid", hybrid)
+        object.__setattr__(self, "_default_k", default_k)
 
         # Initialize empty FAISS index without texts
-        object.__setattr__(self, "vectorstore", FAISS.from_texts([""], self.embeddings))
+        object.__setattr__(self, "_vectorstore", FAISS.from_texts([""], self.embeddings))
         self.vectorstore.delete([self.vectorstore.index_to_docstore_id[0]])  # Remove dummy document
 
         if hybrid:
-            object.__setattr__(self, "documents", [])
+            object.__setattr__(self, "_documents", [])
 
         logger.info(
             f"Retriever initialized with model: {model_choice if embeddings is None else 'custom'}, "
@@ -111,12 +136,13 @@ class Retriever(BaseRetriever):
         else:
             return self.vectorstore.as_retriever(search_kwargs={"k": k}).invoke(query)
 
-    def _get_relevant_documents(self, query: str) -> list[Document]:
+    def _get_relevant_documents(self, query: str, *, run_manager: object | None = None) -> list[Document]:
         """
         Implement abstract retrieval method required by BaseRetriever.
 
         Args:
             query (str): The query string.
+            run_manager (object, optional): Run manager for tracking. Defaults to None.
 
         Returns:
             list[Document]: List of relevant documents.
