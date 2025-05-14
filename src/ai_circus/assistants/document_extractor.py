@@ -16,7 +16,7 @@ from unstructured.partition.auto import partition
 from ai_circus.core import custom_logger
 
 # Module-level constants
-CHUNK_SIZE: int = 1000  # Maximum characters per chunk
+CHUNK_SIZE: int = 5000  # Maximum characters per chunk
 CHUNK_OVERLAP: int = 100  # Overlapping characters between chunks
 OCR_LANGUAGES: tuple[str, ...] = ("eng",)  # Languages for OCR
 SUPPORTED_EXTENSIONS: tuple[str, ...] = (".pdf", ".docx", ".md", ".txt")
@@ -118,11 +118,11 @@ class DocumentExtractor:
 if __name__ == "__main__":
     # Example usage for testing
     extractor = DocumentExtractor()
-    sample_file = "scenarios/python_development/documents/2025_15 Software Engineering Principles.pdf"
+    sample_file = "scenarios/python_development/documents/15_software_engineering_principles.docx"
     try:
         texts = extractor.extract_text(
             sample_file,
-            chunk_size=5000,  # Override default for testing
+            chunk_size=CHUNK_SIZE,  # Override default for testing
             chunk_overlap=CHUNK_OVERLAP,
             strategy="fast",
             languages=["eng"],
