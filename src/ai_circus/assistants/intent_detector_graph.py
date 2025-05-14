@@ -25,7 +25,18 @@ logger = custom_logger.init(level="DEBUG")
 
 
 def load_prompt_template(node: str) -> str:
-    """Load prompt template for the specified node from prompts.yaml and add tags with carriage returns."""
+    """Load prompt template for the specified node from prompts.yaml and add tags with carriage returns.
+
+    Args:
+        node (str): The node for which to load the prompt template.
+
+    Returns:
+        str: The formatted prompt template with tagged sections.
+
+    Raises:
+        FileNotFoundError: If prompts.yaml is not found.
+        ValueError: If the YAML is invalid, empty, or missing the node configuration.
+    """
     try:
         with resources.files("ai_circus.assistants").joinpath("prompts.yaml").open("r") as file:
             config = yaml.safe_load(file)
@@ -101,6 +112,12 @@ def load_prompt_template(node: str) -> str:
         raise ValueError(f"Failed to load prompts.yaml: {e}") from e
 
 
+# Prompt Templates
+INTENT_PROMPT = ChatPromptTemplate.from_template(load_prompt_template("intent_detection"))
+NON_RETRIEVER_PROMPT = ChatPromptTemplate.from_template(load_prompt_template("non_retriever_response"))
+POST_RETRIEVER_PROMPT = ChatPromptTemplate.from_template(load_prompt_template("post_retriever_response"))
+
+
 class GraphState(BaseModel):
     """State model for intent detection and response graph."""
 
@@ -112,7 +129,17 @@ class GraphState(BaseModel):
 
 
 def process_llm_response(content: str) -> dict:
-    """Parse and validate LLM JSON response."""
+    """Parse and validate LLM JSON response.
+
+    Args:
+        content (str): Raw LLM response content.
+
+    Returns:
+        dict: Parsed JSON response.
+
+    Raises:
+        ValueError: If the response is not valid JSON.
+    """
     content = content.strip()
     if content.startswith("```json") and content.endswith("```"):
         content = content[7:-3].strip()
@@ -124,7 +151,16 @@ def process_llm_response(content: str) -> dict:
 
 
 def validate_output(output: dict, required_keys: set[str], node: str) -> None:
-    """Validate output dictionary structure."""
+    """Validate output dictionary structure.
+
+    Args:
+        output (dict): The output dictionary to validate.
+        required_keys (set[str]): Set of required keys.
+        node (str): The node name for error reporting.
+
+    Raises:
+        ValueError: If the output is invalid or missing required keys.
+    """
     if not isinstance(output, dict):
         logger.error(f"Expected {node} output to be dict, got: {output}")
         raise ValueError(f"Invalid {node} output type")
@@ -135,7 +171,14 @@ def validate_output(output: dict, required_keys: set[str], node: str) -> None:
 
 
 def intent_detector_node(state: GraphState) -> GraphState:
-    """Detect intent from user input."""
+    """Detect intent from user input.
+
+    Args:
+        state (GraphState): The current graph state.
+
+    Returns:
+        GraphState: Updated state with intent output.
+    """
     llm = get_llm()
     prompt = INTENT_PROMPT.format(conversation_history=json.dumps(state.history, indent=2), user_input=state.user_input)
     response = llm.invoke(prompt)
@@ -149,7 +192,14 @@ def intent_detector_node(state: GraphState) -> GraphState:
 
 
 def non_retriever_response_node(state: GraphState) -> GraphState:
-    """Generate response for non-retrieval intents."""
+    """Generate response for non-retrieval intents.
+
+    Args:
+        state (GraphState): The current graph state.
+
+    Returns:
+        GraphState: Updated state with response output and updated history.
+    """
     llm = get_llm()
     prompt = NON_RETRIEVER_PROMPT.format(
         conversation_history=json.dumps(state.history, indent=2), user_input=state.user_input
@@ -162,13 +212,21 @@ def non_retriever_response_node(state: GraphState) -> GraphState:
     return state
 
 
-def retriever_node(state: GraphState) -> GraphState:
-    """Retrieve relevant documents if the intent is 'retrieve'."""
+def retriever_node(state: GraphState, retriever: Retriever) -> GraphState:
+    """Retrieve relevant documents if the intent is 'retrieve'.
+
+    Args:
+        state (GraphState): The current graph state.
+        retriever (Retriever): The retriever instance to use for document retrieval.
+
+    Returns:
+        GraphState: Updated state with retrieved documents.
+
+    Raises:
+        ValueError: If document retrieval fails.
+    """
     if state.intent_output.get("intent") == "retrieve":
         try:
-            if retriever is None:
-                logger.error("Retriever is not initialized")
-                raise ValueError("Retriever is not initialized")
             reformulated_question = state.intent_output.get("reformulated_question", "")
             docs = retriever.get_relevant_documents(reformulated_question)
             state.retrieved_documents = [doc.page_content for doc in docs]
@@ -180,7 +238,14 @@ def retriever_node(state: GraphState) -> GraphState:
 
 
 def post_retriever_response_node(state: GraphState) -> GraphState:
-    """Generate response for retrieval intents."""
+    """Generate response for retrieval intents.
+
+    Args:
+        state (GraphState): The current graph state.
+
+    Returns:
+        GraphState: Updated state with response output and updated history.
+    """
     llm = get_llm()
     prompt = POST_RETRIEVER_PROMPT.format(
         conversation_history=json.dumps(state.history, indent=2),
@@ -198,15 +263,29 @@ def post_retriever_response_node(state: GraphState) -> GraphState:
 
 
 def route_intent(state: GraphState) -> Literal["post_retriever", "non_retriever"]:
-    """Route based on detected intent."""
+    """Route based on detected intent.
+
+    Args:
+        state (GraphState): The current graph state.
+
+    Returns:
+        Literal["post_retriever", "non_retriever"]: The next node to route to.
+    """
     return "post_retriever" if state.intent_output.get("intent") == "retrieve" else "non_retriever"
 
 
-def build_graph() -> CompiledStateGraph:
-    """Compile the intent detection and response workflow graph with retriever node."""
+def build_graph(retriever: Retriever) -> CompiledStateGraph:
+    """Compile the intent detection and response workflow graph with retriever node.
+
+    Args:
+        retriever (Retriever): The retriever instance to use for document retrieval.
+
+    Returns:
+        CompiledStateGraph: The compiled workflow graph.
+    """
     workflow = StateGraph(GraphState)
     workflow.add_node("intent_detector", intent_detector_node)
-    workflow.add_node("retriever", retriever_node)
+    workflow.add_node("retriever", lambda state: retriever_node(state, retriever))
     workflow.add_node("post_retriever", post_retriever_response_node)
     workflow.add_node("non_retriever", non_retriever_response_node)
     workflow.set_entry_point("intent_detector")
@@ -222,7 +301,13 @@ def build_graph() -> CompiledStateGraph:
 
 
 def log_round(round_num: int, state: GraphState, input_history: list) -> None:
-    """Log round details in a structured format."""
+    """Log round details in a structured format.
+
+    Args:
+        round_num (int): The round number.
+        state (GraphState): The current graph state.
+        input_history (list): The input history for logging.
+    """
     logger.info(
         f"Round {round_num} response:\n"
         f"{
@@ -241,11 +326,6 @@ def log_round(round_num: int, state: GraphState, input_history: list) -> None:
 
 
 if __name__ == "__main__":
-    # Prompt Templates
-    INTENT_PROMPT = ChatPromptTemplate.from_template(load_prompt_template("intent_detection"))
-    NON_RETRIEVER_PROMPT = ChatPromptTemplate.from_template(load_prompt_template("non_retriever_response"))
-    POST_RETRIEVER_PROMPT = ChatPromptTemplate.from_template(load_prompt_template("post_retriever_response"))
-
     # Initialize retriever with sample texts
     retriever_instance = Retriever()
     sample_texts = [
@@ -271,9 +351,8 @@ if __name__ == "__main__":
         "Using virtual environments in Python isolates project dependencies for better reproducibility.",
     ]
     retriever_instance.add_texts(sample_texts)
-    retriever = retriever_instance
 
-    graph = build_graph()
+    graph = build_graph(retriever_instance)
     history = []
 
     # Round 1: Retrieval intent (Python-related)
