@@ -8,9 +8,10 @@ from __future__ import annotations
 from typing import Literal
 
 from langchain.embeddings.base import Embeddings
-from langchain.retrievers import BM25Retriever, EnsembleRetriever, BaseRetriever
 from langchain.schema import Document
 from langchain.vectorstores import FAISS, Qdrant
+from langchain_community.retrievers import BM25Retriever, EnsembleRetriever
+from langchain_core.retrievers import BaseRetriever
 from qdrant_client import QdrantClient
 
 from ai_circus.core import custom_logger
@@ -107,7 +108,8 @@ class Retriever(BaseRetriever):
             vector_retriever = self.vectorstore.as_retriever(search_kwargs={"k": k})
             bm25_retriever = BM25Retriever.from_documents(self.documents, k=k)
             ensemble_retriever = EnsembleRetriever(
-                retrievers=[vector_retriever, bm25_retriever], weights=[0.5, 0.5]  # Equal weighting for vector and BM25
+                retrievers=[vector_retriever, bm25_retriever],
+                weights=[0.5, 0.5],  # Equal weighting for vector and BM25
             )
             return ensemble_retriever.get_relevant_documents(query)
         else:
