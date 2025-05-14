@@ -17,7 +17,7 @@ from unstructured.partition.auto import partition
 from ai_circus.core import custom_logger
 
 # Module-level constants
-CHUNK_SIZE: int = 2500  # Maximum characters per chunk
+CHUNK_SIZE: int = 5000  # Maximum characters per chunk
 CHUNK_OVERLAP: int = 100  # Overlapping characters between chunks
 OCR_LANGUAGES: tuple[str, ...] = ("eng",)  # Languages for OCR
 SUPPORTED_EXTENSIONS: tuple[str, ...] = (".pdf", ".docx", ".md", ".txt")
