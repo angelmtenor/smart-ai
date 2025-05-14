@@ -17,7 +17,7 @@ from unstructured.partition.auto import partition
 from ai_circus.core import custom_logger
 
 # Module-level constants
-CHUNK_SIZE: int = 5000  # Maximum characters per chunk
+CHUNK_SIZE: int = 2500  # Maximum characters per chunk
 CHUNK_OVERLAP: int = 100  # Overlapping characters between chunks
 OCR_LANGUAGES: tuple[str, ...] = ("eng",)  # Languages for OCR
 SUPPORTED_EXTENSIONS: tuple[str, ...] = (".pdf", ".docx", ".md", ".txt")
@@ -65,22 +65,18 @@ class DocumentExtractor:
         include_metadata: bool = True,
     ) -> list[Document]:
         """
-        Extract and chunk text from the specified file, returning langchain Document objects with metadata.
+        Extract text from a document file and chunk it into smaller pieces.
 
         Args:
             file_path (str): Path to the document file.
             chunk_size (int, optional): Maximum characters per chunk. Defaults to CHUNK_SIZE.
             chunk_overlap (int, optional): Overlapping characters between chunks. Defaults to CHUNK_OVERLAP.
-            strategy (str, optional): Partitioning strategy (e.g., "auto", "fast", "ocr_only"). Defaults to "auto".
-            languages (list[str], optional): Languages for OCR (e.g., ["eng"]). Defaults to OCR_LANGUAGES.
-            include_metadata (bool, optional): Whether to include metadata in the output. Defaults to True.
+            strategy (str, optional): Partitioning strategy. Defaults to "auto".
+            languages (list[str], optional): List of languages for OCR. Defaults to OCR_LANGUAGES.
+            include_metadata (bool, optional): Whether to include metadata in Document objects. Defaults to True.
 
         Returns:
-            list[Document]: List of langchain Document objects, each containing a text chunk and metadata.
-
-        Raises:
-            FileNotFoundError: If the file does not exist or is not a file.
-            ValueError: If the file type is not supported, extraction fails, or chunk parameters are invalid.
+            list[Document]: List of Document objects containing the extracted text and metadata.
         """
         path = Path(file_path)
         if not path.exists() or not path.is_file():
@@ -91,7 +87,6 @@ class DocumentExtractor:
             logger.error(f"Unsupported file type: {ext}")
             raise ValueError(f"Unsupported file type: {ext}")
 
-        # Use provided parameters or fall back to module-level defaults
         chunk_size = chunk_size if chunk_size is not None else CHUNK_SIZE
         chunk_overlap = chunk_overlap if chunk_overlap is not None else CHUNK_OVERLAP
         strategy = strategy if strategy is not None else "auto"
@@ -102,21 +97,26 @@ class DocumentExtractor:
             elements = partition(str(path), strategy=strategy, languages=languages)
             logger.debug(f"Extracted {len(elements)} elements from {file_path}")
 
+            # Combine all element texts into one string
+            full_text = " ".join(element.text for element in elements if hasattr(element, "text") and element.text)
+            logger.debug(f"Combined text length: {len(full_text)} characters")
+
+            # Chunk the combined text
+            chunks = self._chunk_text(full_text, chunk_size, chunk_overlap)
+
+            # Create Document objects
             documents = []
-            global_chunk_index = 0
-            for element in elements:
-                if hasattr(element, "text") and element.text:
-                    chunks = self._chunk_text(element.text, chunk_size, chunk_overlap)
-                    base_metadata = {"source": file_path}
-                    if include_metadata and hasattr(element, "metadata"):
-                        base_metadata.update(element.metadata.to_dict())
-                    for i, chunk in enumerate(chunks):
-                        metadata = base_metadata.copy()
-                        metadata["chunk_index"] = i
-                        metadata["total_chunks_from_element"] = len(chunks)
-                        metadata["global_chunk_index"] = global_chunk_index
-                        documents.append(Document(page_content=chunk, metadata=metadata))
-                        global_chunk_index += 1
+            base_metadata = {"source": file_path}
+            # Include metadata from the first element (or aggregate as needed)
+            if include_metadata and elements and hasattr(elements[0], "metadata"):
+                base_metadata.update(elements[0].metadata.to_dict())
+
+            for i, chunk in enumerate(chunks):
+                metadata = base_metadata.copy()
+                metadata["chunk_index"] = str(i)
+                metadata["total_chunks"] = str(len(chunks))
+                documents.append(Document(page_content=chunk, metadata=metadata))
+
             logger.info(f"Extracted and chunked {len(documents)} Document objects from {file_path}")
             return documents
 
