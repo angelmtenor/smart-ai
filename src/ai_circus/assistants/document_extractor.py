@@ -1,16 +1,17 @@
 """
 Document extraction module for the AI Circus project using the unstructured package.
-Author: Angel Martinez-Tenor, 2025. Adapted from https://github.com/angelmtenor/ds-template
+Author: Angel Martinez-Tenor, 2025.
 
 Dependencies:
 - unstructured[pdf,docx] (install with `pip install "unstructured[pdf,docx]"`)
-- poppler and tesseract for PDF processing
+- langchain-core (install with `pip install langchain-core`)
 """
 
 from __future__ import annotations
 
 from pathlib import Path
 
+from langchain_core.documents import Document
 from unstructured.partition.auto import partition
 
 from ai_circus.core import custom_logger
@@ -37,7 +38,7 @@ class DocumentExtractor:
             chunk_overlap (int): Overlapping characters between chunks.
 
         Returns:
-            List[str]: List of text chunks.
+            list[str]: List of text chunks.
         """
         if chunk_size <= 0 or chunk_overlap < 0 or chunk_overlap >= chunk_size:
             logger.error(f"Invalid chunk parameters: size={chunk_size}, overlap={chunk_overlap}")
@@ -61,20 +62,21 @@ class DocumentExtractor:
         chunk_overlap: int | None = None,
         strategy: str | None = None,
         languages: list[str] | None = None,
-    ) -> list[str]:
+        include_metadata: bool = True,
+    ) -> list[Document]:
         """
-        Extract and chunk text from the specified file.
+        Extract and chunk text from the specified file, returning langchain Document objects with metadata.
 
         Args:
             file_path (str): Path to the document file.
             chunk_size (int, optional): Maximum characters per chunk. Defaults to CHUNK_SIZE.
             chunk_overlap (int, optional): Overlapping characters between chunks. Defaults to CHUNK_OVERLAP.
-            strategy (str, optional): Partitioning strategy (e.g., "auto", "fast", "ocr_only").
-                Defaults to PARTITION_STRATEGY.
+            strategy (str, optional): Partitioning strategy (e.g., "auto", "fast", "ocr_only"). Defaults to "auto".
             languages (list[str], optional): Languages for OCR (e.g., ["eng"]). Defaults to OCR_LANGUAGES.
+            include_metadata (bool, optional): Whether to include metadata in the output. Defaults to True.
 
         Returns:
-            List[str]: List of text chunks extracted and chunked from the document.
+            list[Document]: List of langchain Document objects, each containing a text chunk and metadata.
 
         Raises:
             FileNotFoundError: If the file does not exist or is not a file.
@@ -100,15 +102,23 @@ class DocumentExtractor:
             elements = partition(str(path), strategy=strategy, languages=languages)
             logger.debug(f"Extracted {len(elements)} elements from {file_path}")
 
-            # Combine text elements into a single string
-            texts = [element.text for element in elements if hasattr(element, "text") and element.text]
-            combined_text = " ".join(texts)
-            logger.debug(f"Combined text length: {len(combined_text)} characters")
-
-            # Chunk the combined text
-            chunks = self._chunk_text(combined_text, chunk_size, chunk_overlap)
-            logger.info(f"Extracted and chunked {len(chunks)} text chunks from {file_path}")
-            return chunks
+            documents = []
+            global_chunk_index = 0
+            for element in elements:
+                if hasattr(element, "text") and element.text:
+                    chunks = self._chunk_text(element.text, chunk_size, chunk_overlap)
+                    base_metadata = {"source": file_path}
+                    if include_metadata and hasattr(element, "metadata"):
+                        base_metadata.update(element.metadata.to_dict())
+                    for i, chunk in enumerate(chunks):
+                        metadata = base_metadata.copy()
+                        metadata["chunk_index"] = i
+                        metadata["total_chunks_from_element"] = len(chunks)
+                        metadata["global_chunk_index"] = global_chunk_index
+                        documents.append(Document(page_content=chunk, metadata=metadata))
+                        global_chunk_index += 1
+            logger.info(f"Extracted and chunked {len(documents)} Document objects from {file_path}")
+            return documents
 
         except Exception as e:
             logger.error(f"Error extracting text from {file_path}: {e}")
@@ -120,15 +130,18 @@ if __name__ == "__main__":
     extractor = DocumentExtractor()
     sample_file = "scenarios/python_development/documents/15_software_engineering_principles.docx"
     try:
-        texts = extractor.extract_text(
+        documents = extractor.extract_text(
             sample_file,
-            chunk_size=CHUNK_SIZE,  # Override default for testing
+            chunk_size=CHUNK_SIZE,
             chunk_overlap=CHUNK_OVERLAP,
             strategy="fast",
             languages=["eng"],
+            include_metadata=True,
         )
-        logger.info(f"Extracted {len(texts)} text chunks")
-        for i, text in enumerate(texts[:5]):
-            logger.info(f"Chunk {i + 1}: {text[:100]}...")
+        logger.info(f"Extracted {len(documents)} Document objects")
+        for i, doc in enumerate(documents[:5]):
+            logger.info(f"Document {i + 1}:")
+            logger.info(f"  Content (first 100 chars): {doc.page_content[:100]}...")
+            logger.info(f"  Metadata: {doc.metadata}")
     except Exception as e:
         logger.error(f"Error: {e}")
