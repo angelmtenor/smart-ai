@@ -1,22 +1,34 @@
 # Prompt template for intent detection, non-retriever response generation, and post-retriever response generation
 # Author: Angel Martinez-Tenor, 2025
 scenario_description: |
-  This scenario describes an assistant equipped with comprehensive knowledge of Python programming, best practices,
-  and related technical topics. The assistant uses this context to respond accurately and maintain relevant conversation threads.
+  This scenario equips the assistant with deep expertise in software engineering principles and Python programming, focusing on writing scalable, maintainable, and efficient code. The assistant draws on comprehensive resources to provide accurate, actionable insights into best practices, including the 15 Software Engineering Principles for avoiding technical debt and ensuring clean code. It excels at explaining concepts like DRY, KISS, SOLID, and the Law of Demeter, while maintaining relevant, engaging conversation threads. The assistant also covers Python-specific tools and practices, such as Pydantic models, UV tool, and Cookiecutter project structures, to support developers in building robust applications.
 
 scenario_documents: |
-  Contains detailed resources and documents including Python development best practices, UV guide, pre-commit configurations,
-  Visual Studio Code setup for Python, AST API templates, Cookiecutter projects, popular Python libraries, and the use
-  of pydantic models, Python dataclass, or Pydantic dataclass.
+  A rich set of resources covering software engineering and Python development, including:
+  - "15 Software Engineering Principles" (source: https://medium.com/pythoneers/16-software-engineering-principles-i-ignored-for-too-long-a69d32f1a52e), which outlines 15 key principles for writing good code, such as DRY (Don't Repeat Yourself), KISS (Keep It Simple, Stupid), YAGNI (You Ain't Gonna Need It), SOLID principles, Composition Over Inheritance, Law of Demeter, Test-Driven Development (TDD), Don't Make Me Think, Fail Fast Fail Often, SELF (Self-Descriptive Naming), PRECISION (Specific Exception Handling), MSE (Minimized Side Effects), POS (Principle of Least Surprise), FROG (Favor Readability Over Cleverness), and Separation of Concerns. The document emphasizes practical applications, such as using reusable functions for DRY, writing failing tests first for TDD, and separating business logic from UI for SoC, with quotes like “Good code is its own best documentation” by Steve McConnell.
+  - Detailed guides on Python development best practices, including PEP 8 guidelines, code formatting with Black, and linting with Flake8.
+  - Documentation on Python tools like the UV tool for dependency management, pre-commit configurations for code quality, and Cookiecutter templates for standardized project structures.
+  - Resources on setting up Visual Studio Code for Python, including Python extension installation and linter configuration.
+  - In-depth materials on Python libraries (e.g., NumPy, Pandas, Matplotlib) and advanced features like Pydantic models, Python dataclasses, Pydantic dataclasses, and the AST API for code manipulation.
 
 scenario_sample_questions: |
-  - "What are the best practices for Python development?"
-  - "How do I set up Visual Studio Code for Python programming?"
-  - "Can you explain how to use Pydantic models in Python?"
-  - "What are some popular Python libraries for data science?"
-  - "How does the UV tool help with Python project management?"
-  - "What is the Cookiecutter project structure for Python?"
-  - "How can I configure pre-commit hooks for a Python project?"
+  - "What is the DRY principle, and how can I apply it in my Python projects?"
+  - "How does the KISS principle complement DRY in software engineering?"
+  - "Can you provide an example of code that violates the DRY principle?"
+  - "Explain the SOLID principles and their importance in object-oriented programming."
+  - "How does the Single Responsibility Principle improve code maintainability?"
+  - "What’s an example of a class that violates the SOLID principles?"
+  - "What does the Law of Demeter mean, and how can I follow it in my code?"
+  - "How does Test-Driven Development (TDD) improve code quality, and what’s the Red-Green-Refactor cycle?"
+  - "What is the difference between composition and inheritance, and when should I use each?"
+  - "How can I apply the Principle of Least Surprise in my Python functions?"
+  - "What are best practices for writing self-descriptive variable and function names?"
+  - "How does the Separation of Concerns principle help in designing scalable applications?"
+  - "What does 'Fail Fast, Fail Often' mean in software development, and how can I implement it?"
+  - "How do I set up pre-commit hooks to enforce code quality in a Python project?"
+  - "Can you explain how to use Pydantic models for data validation in Python APIs?"
+  - "What are the benefits of using the UV tool for Python project management?"
+  - "How can I structure a Python project using Cookiecutter templates?"
 
 intent_detection:
   goal: |
