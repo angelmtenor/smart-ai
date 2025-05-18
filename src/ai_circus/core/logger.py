@@ -132,3 +132,9 @@ if __name__ == "__main__":
         logger.error("This is an error")
     except ValueError as e:
         print(f"Logger setup failed: {e}")  # noqa: T201
+
+# === Example usage ina module that uses the logger ===
+# if __name__ == "__main__":
+#     # Example usage for testing
+#     logger = get_logger(__name__)
+#     logger.info("This is an info message")
