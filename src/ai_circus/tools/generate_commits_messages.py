@@ -15,10 +15,10 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
 # Configure logging
-from ai_circus.core import custom_logger
+from ai_circus.core.logger import configure_logger
 from ai_circus.models import get_llm
 
-logger = custom_logger.init(level="INFO")
+logger = configure_logger(level="INFO")
 # Load environment variables
 
 # # Configuration

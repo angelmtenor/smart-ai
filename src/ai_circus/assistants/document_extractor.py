@@ -14,7 +14,7 @@ from pathlib import Path
 from langchain_core.documents import Document
 from unstructured.partition.auto import partition
 
-from ai_circus.core import custom_logger
+from ai_circus.core.logger import configure_logger
 
 # Module-level constants
 CHUNK_SIZE: int = 5000  # Maximum characters per chunk
@@ -22,7 +22,7 @@ CHUNK_OVERLAP: int = 100  # Overlapping characters between chunks
 OCR_LANGUAGES: tuple[str, ...] = ("eng",)  # Languages for OCR
 SUPPORTED_EXTENSIONS: tuple[str, ...] = (".pdf", ".docx", ".md", ".txt")
 
-logger = custom_logger.init(level="DEBUG")
+logger = configure_logger(level="DEBUG")
 
 
 class DocumentExtractor:

@@ -14,10 +14,10 @@ from langchain_community.retrievers import BM25Retriever
 from langchain_community.vectorstores import FAISS
 from langchain_core.retrievers import BaseRetriever
 
-from ai_circus.core import custom_logger
+from ai_circus.core.logger import configure_logger
 from ai_circus.models import get_embeddings
 
-logger = custom_logger.init(level="DEBUG")
+logger = configure_logger(level="DEBUG")
 
 
 class Retriever(BaseRetriever):

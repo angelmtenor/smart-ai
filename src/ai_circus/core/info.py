@@ -18,10 +18,10 @@ from typing import Any, TypeVar
 import cpuinfo
 import psutil
 
-from ai_circus.core import custom_logger
+from ai_circus.core.logger import get_logger
 
 F = TypeVar("F", bound=Callable[..., Any])
-logger = custom_logger.get_logger(__name__)
+logger = get_logger(__name__)
 
 # Cached installed packages
 INSTALLED_PACKAGES = {dist.metadata["Name"]: dist.version for dist in distributions()}

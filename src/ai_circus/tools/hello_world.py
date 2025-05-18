@@ -6,11 +6,11 @@ from __future__ import annotations
 
 from dotenv import load_dotenv
 
-from ai_circus.core import custom_logger
 from ai_circus.core.info import info_system
+from ai_circus.core.logger import configure_logger
 
 # Initialize logger and load environment variables
-logger = custom_logger.init(level="INFO")
+logger = configure_logger(level="INFO")
 load_dotenv()
 
 

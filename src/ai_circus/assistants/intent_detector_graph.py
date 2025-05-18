@@ -18,10 +18,10 @@ from langgraph.graph.state import CompiledStateGraph
 from pydantic import BaseModel
 
 from ai_circus.assistants.retriever import Retriever
-from ai_circus.core import custom_logger
+from ai_circus.core.logger import configure_logger
 from ai_circus.models import get_llm
 
-logger = custom_logger.init(level="DEBUG")
+logger = configure_logger(level="DEBUG")
 
 
 def load_prompt_template(node: str) -> str:

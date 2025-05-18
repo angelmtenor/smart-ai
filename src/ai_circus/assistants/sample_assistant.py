@@ -14,14 +14,14 @@ from langgraph.graph.state import CompiledStateGraph
 from ai_circus.assistants.document_extractor import DocumentExtractor
 from ai_circus.assistants.intent_detector_graph import GraphState, build_graph
 from ai_circus.assistants.retriever import Retriever
-from ai_circus.core import custom_logger
+from ai_circus.core.logger import configure_logger
 
 # Configuration constants
 CHUNK_SIZE: int = 5000
 CHUNK_OVERLAP: int = 100
 SAMPLE_FILE_PATH: str = "scenarios/python_development/documents/15_software_engineering_principles.docx"
 
-logger = custom_logger.init(level="DEBUG")
+logger = configure_logger(level="DEBUG")
 
 
 class DocumentChunk(TypedDict):
