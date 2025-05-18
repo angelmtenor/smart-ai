@@ -40,13 +40,13 @@ def info_software(modules: list[str] | None = None) -> None:
     Log Python version and versions of specified modules.
 
     Args:
-        modules (list[str] | None): List of module names to logger. If None, uses DEFAULT_MODULES.
+        modules (list[str] | None): List of module names to log. If None, uses DEFAULT_MODULES.
     """
     logger.info(f"{'ENV':<25}{sys.prefix}")
-    logger.info(f"{'PYTHON':<25}{sys.version.split('(', 1)[0].strip()}")
+    logger.info(f"{'PYTHON':<25}{platform.python_version()}")
 
     for module in modules or DEFAULT_MODULES:
-        version = "--N/A--" if module == "pickle" else INSTALLED_PACKAGES.get(module, "--NO--")
+        version = INSTALLED_PACKAGES.get(module, "N/A")
         logger.info(f" - {module:<22}{version}")
 
 
@@ -73,7 +73,6 @@ def info_gpu() -> None:
             return
 
         # Run nvidia-smi command to get GPU info using full path
-
         result = subprocess.run(  # noqa: S603
             [nvidia_smi_path, "--query-gpu=name", "--format=csv,noheader"],
             capture_output=True,
@@ -96,7 +95,6 @@ def info_system(modules: list[str] | None = None) -> None:
     Log full system information including OS, hardware, and software.
 
     Args:
-        hardware (bool): Whether to include hardware info (CPU, RAM, GPU). Defaults to True.
         modules (list[str] | None): List of module names to log versions for. Defaults to DEFAULT_MODULES.
     """
     info_hardware()
@@ -110,6 +108,10 @@ def info_system(modules: list[str] | None = None) -> None:
 def get_memory_usage(obj: object) -> float:
     """
     Calculate and return memory usage of an object in megabytes.
+
+    Note: This function uses `sys.getsizeof`, which only accounts for the memory
+    usage of the object itself, not including referenced objects. For a more
+    accurate measurement, consider using a library like `pympler`.
 
     Args:
         obj (object): The object to analyze.
