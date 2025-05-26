@@ -87,6 +87,7 @@
         "ensurepath",
         "faiss",
         "fastapi",
+        "fastmcp",
         "fgrep",
         "filterwarnings",
         "FURB",
