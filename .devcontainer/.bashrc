@@ -92,7 +92,7 @@ if ! shopt -oq posix; then
     fi
 fi
 
-# Add pipx to PATH
+# Add pipx to PATH  (optional)
 export PATH="$PATH:$HOME/.local/bin"
 
 # Project setup alias

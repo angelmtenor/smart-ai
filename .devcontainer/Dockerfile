@@ -54,7 +54,6 @@ RUN userdel -r ubuntu 2>/dev/null || true && \
     g++ \
     clang \
     linux-libc-dev \
-    pipx \
     unzip \
     zip \
     xclip \
@@ -80,18 +79,17 @@ RUN if [ "$ENABLE_GPU" = "true" ]; then \
 # Create non-root user with minimal sudo privileges
 RUN groupadd --gid "$USER_GID" "$USERNAME" && \
     useradd --uid "$USER_UID" --gid "$USER_GID" -m "$USERNAME" -s /bin/bash && \
-    echo "$USERNAME ALL=(ALL) NOPASSWD:/usr/bin/apt-get,/usr/bin/pipx" > /etc/sudoers.d/"$USERNAME" && \
+    echo "$USERNAME ALL=(ALL) NOPASSWD:/usr/bin/apt-get" > /etc/sudoers.d/"$USERNAME" && \
     chmod 0440 /etc/sudoers.d/"$USERNAME"
 
 # Switch to non-root user
 USER $USERNAME
 WORKDIR /home/$USERNAME
 
-# Install user-level tools (UV, Cookiecutter)
-RUN pipx install uv && \
-    pipx install cookiecutter && \
-    pipx ensurepath && \
-    rm -rf /home/$USERNAME/.cache/pipx
+# Install user-level tools (UV via curl, Cookiecutter via uv)
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh && \
+    /home/$USERNAME/.local/bin/uv tool install cookiecutter && \
+    /home/$USERNAME/.local/bin/uv tool ensurepath
 
 # Configure Git
 RUN git config --global init.defaultBranch main && \
