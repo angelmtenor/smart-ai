@@ -41,7 +41,7 @@ main() {
     fi
 
     # Check prerequisites
-    check_cmd uv || { log error "'uv' not installed. Install with 'pipx install uv'."; return 1; }
+    check_cmd uv || { log error "'uv' not installed. Install with 'curl -LsSf https://astral.sh/uv/install.sh | sh'"; return 1; }
     [[ -f "pyproject.toml" ]] || { log error "'pyproject.toml' not found."; return 1; }
     # check_cmd node || { log error "'node' not installed. Install with 'npm install -g nodejs'."; return 1; }
 
