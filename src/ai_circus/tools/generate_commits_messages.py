@@ -18,6 +18,8 @@ from langchain_core.prompts import ChatPromptTemplate
 from ai_circus.core.logger import configure_logger
 from ai_circus.models import get_llm
 
+EXCLUDED_PATTERNS = [r"\.ipynb$", r"\.lock$"]
+
 logger = configure_logger(level="INFO")
 # Load environment variables
 
@@ -62,8 +64,10 @@ def get_changed_files() -> list[dict[str, str]]:
     staged_files = run_git_command(["git", "diff", "--cached", "--name-status"])
     for line in staged_files.splitlines():
         status, file_path = line.split("\t", 1)
+        if any(re.search(pattern, file_path) for pattern in EXCLUDED_PATTERNS):
+            continue  # Skip this file
         if Path(file_path).exists():
-            diff_content = run_git_command(["git", "diff", "--cached", "--", file_path])
+            diff_content = run_git_command(["git", "diff", "--cached", "--numstat", "--", file_path])
             if diff_content:
                 diff_lines = diff_content.splitlines()[:10]
                 diff_content = "\n".join(diff_lines) + "\n... (truncated)"
@@ -73,6 +77,8 @@ def get_changed_files() -> list[dict[str, str]]:
     unstaged_files = run_git_command(["git", "diff", "--name-status"])
     for line in unstaged_files.splitlines():
         status, file_path = line.split("\t", 1)
+        if any(re.search(pattern, file_path) for pattern in EXCLUDED_PATTERNS):
+            continue  # Skip this file
         if Path(file_path).exists():
             diff_content = run_git_command(["git", "diff", "--", file_path])
             if diff_content:
@@ -83,8 +89,9 @@ def get_changed_files() -> list[dict[str, str]]:
     # Untracked files
     untracked_files = run_git_command(["git", "ls-files", "--others", "--exclude-standard"]).splitlines()
     for file_path in untracked_files:
-        if Path(file_path).exists():
-            changes.append({"file": file_path, "status": "A", "diff": "New file added"})
+        if not file_path or any(re.search(pattern, file_path) for pattern in EXCLUDED_PATTERNS):
+            continue
+        changes.append({"file": file_path, "status": "A", "diff": "New file added"})
 
     # Remove duplicates
     unique_changes = list({change["file"]: change for change in changes}.values())
