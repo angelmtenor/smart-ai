@@ -77,8 +77,8 @@ set_custom_prompt() {
 
 # Add setup alias
 add_alias() {
-    local alias_cmd="alias setup='source setup_user.sh'"
-    append_to_bashrc "$alias_cmd" "# Alias from setup_user.sh"
+    local alias_cmd="alias setup='source setup.sh'"
+    append_to_bashrc "$alias_cmd" "# Alias from setup.sh"
     eval "$alias_cmd"
     log "Alias 'setup' set for current shell."
 }
